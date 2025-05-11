@@ -20,7 +20,6 @@
 
   <ItemGroup>
     <Folder Include="Application\" />
-    <Folder Include="Controllers\" />
     <Folder Include="Domain\" />
     <Folder Include="Infrastructure\" />
   </ItemGroup>
