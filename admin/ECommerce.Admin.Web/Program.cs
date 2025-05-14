@@ -1,6 +1,8 @@
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
+SerilogConfiguration.ConfigureSerilog(builder.Configuration);
+builder.Host.UseSerilog();
 builder.Services.AddControllersWithViews();
 
 var app = builder.Build();
