@@ -1,3 +1,6 @@
+using ECommerce.BuildingBlocks.Logging;
+using Serilog;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
