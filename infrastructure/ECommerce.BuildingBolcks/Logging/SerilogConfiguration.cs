@@ -13,11 +13,12 @@ public static class SerilogConfiguration
     /// 配置并初始化 Serilog 日志记录器
     /// </summary>
     /// <param name="configuration">应用程序的配置对象</param>
-    public static void ConfigureSerilog(IConfiguration configuration)
+    public static void ConfigureSerilog(IConfiguration configuration,string serviceName)
     {
         // 创建并配置 Serilog 日志记录器
         var logger = new LoggerConfiguration()
             .ReadFrom.Configuration(configuration) // 从配置文件读取其他设置
+            .Enrich.WithProperty("Service", serviceName) // 添加调用项目/微服务的名称
             .CreateLogger();
 
         // 设置全局日志记录器
