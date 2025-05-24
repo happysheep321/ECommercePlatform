@@ -22,7 +22,8 @@
 
   <ItemGroup>
     <Folder Include="Application\" />
-    <Folder Include="Domain\" />
+    <Folder Include="Domain\Aggregates\RoleAggregate\" />
+    <Folder Include="Domain\ValueObjects\" />
     <Folder Include="Infrastructure\" />
   </ItemGroup>
 
