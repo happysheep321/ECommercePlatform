@@ -2,13 +2,13 @@
 
 namespace Ecommerce.Identity.API.Domain.Aggregates.UserAggregate
 {
-    public class User : IAggregateRoot
+    public class User : Entity<Guid>, IAggregateRoot
     {
         public required string UserName { get; set; }
 
-        public string Passord { get; set; }
+        public required string Passord { get; set; }
 
-        public string Email { get; set; }
+        public required string Email { get; set; }
 
         private readonly List<Guid> roleIds = new();
 

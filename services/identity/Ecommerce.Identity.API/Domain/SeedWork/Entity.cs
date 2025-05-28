@@ -2,9 +2,9 @@
 {
     public abstract class Entity<TId>
     {
-        public TId Id { get; protected set; }
+        public TId? Id { get; protected set; }
 
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             if (obj is not Entity<TId> other)
                 return false;
