@@ -14,6 +14,25 @@ namespace Ecommerce.Identity.API.Domain.Aggregates.UserAggregate
 
         public IReadOnlyCollection<Guid> RoleIds => roleIds.AsReadOnly();
 
+        /// <summary>
+        /// EF Core无参构造函数
+        /// </summary>
+        protected User() { }
+
+        /// <summary>
+        /// 领域构造函数
+        /// </summary>
+        /// <param name="userName">用户名</param>
+        /// <param name="password">密码</param>
+        /// <param name="email">邮件</param>
+        public User(string userName,string password,string email)
+        {
+            Id=Guid.NewGuid(); //聚合根生成的ID
+            UserName = userName;
+            Passord = password;
+            Email = email;
+        }
+
         public void AddRole(Guid roleId)
         {
             if (roleIds.Contains(roleId))
