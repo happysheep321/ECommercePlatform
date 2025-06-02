@@ -10,7 +10,6 @@
     <Folder Include="Base\" />
     <Folder Include="DTOs\" />
     <Folder Include="Exceptions\" />
-    <Folder Include="Enums\" />
     <Folder Include="Constants\" />
     <Folder Include="Interfaces\" />
   </ItemGroup>
