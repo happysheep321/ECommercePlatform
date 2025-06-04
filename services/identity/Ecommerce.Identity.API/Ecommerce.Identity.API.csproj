@@ -22,7 +22,6 @@
 
   <ItemGroup>
     <Folder Include="Application\" />
-    <Folder Include="Domain\ValueObjects\" />
     <Folder Include="Infrastructure\" />
   </ItemGroup>
 

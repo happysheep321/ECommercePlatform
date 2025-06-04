@@ -1,7 +1,7 @@
 ﻿using Ecommerce.Identity.API.Domain.SeedWork;
 using ECommerce.SharedKernel.Enums;
 
-namespace Ecommerce.Identity.API.Domain.Aggregates.UserAggregate
+namespace Ecommerce.Identity.API.Domain.ValueObjects
 {
     public class UserProfile:ValueObject
     {

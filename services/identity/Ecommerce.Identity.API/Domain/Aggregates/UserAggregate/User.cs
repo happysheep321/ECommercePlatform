@@ -1,4 +1,5 @@
 ﻿using Ecommerce.Identity.API.Domain.SeedWork;
+using Ecommerce.Identity.API.Domain.ValueObjects;
 using ECommerce.SharedKernel.Enums;
 
 namespace Ecommerce.Identity.API.Domain.Aggregates.UserAggregate
