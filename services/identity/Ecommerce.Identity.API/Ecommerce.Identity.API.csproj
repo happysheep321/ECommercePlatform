@@ -22,6 +22,7 @@
 
   <ItemGroup>
     <Folder Include="Application\" />
+    <Folder Include="Domain\SeedWork\" />
     <Folder Include="Infrastructure\" />
   </ItemGroup>
 

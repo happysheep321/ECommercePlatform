@@ -1,4 +1,4 @@
-﻿namespace Ecommerce.Identity.API.Domain.SeedWork
+﻿namespace Ecommerce.SharedKernel.Base
 {
     public abstract class ValueObject
     {

@@ -1,4 +1,4 @@
-﻿using Ecommerce.Identity.API.Domain.SeedWork;
+﻿using Ecommerce.SharedKernel.Base;
 using ECommerce.SharedKernel.Enums;
 
 namespace Ecommerce.Identity.API.Domain.ValueObjects

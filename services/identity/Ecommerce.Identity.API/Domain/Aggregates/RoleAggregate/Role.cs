@@ -1,4 +1,5 @@
-﻿using Ecommerce.Identity.API.Domain.SeedWork;
+﻿using Ecommerce.SharedKernel.Base;
+using Ecommerce.SharedKernel.Interfaces;
 
 namespace Ecommerce.Identity.API.Domain.Aggregates.RoleAggregate
 {

@@ -1,4 +1,4 @@
-﻿using Ecommerce.Identity.API.Domain.SeedWork;
+﻿using Ecommerce.SharedKernel.Base;
 
 namespace Ecommerce.Identity.API.Domain.Aggregates.UserAggregate
 {
