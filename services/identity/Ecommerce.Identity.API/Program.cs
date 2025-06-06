@@ -1,9 +1,15 @@
+using Ecommerce.Identity.API.Infrastructure;
 using ECommerce.BuildingBlocks.Logging;
 using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
+var connectionString = builder.Configuration.GetConnectionString("UserDb");
+
+builder.Services.AddDbContextPool<IdentityDbContext>(options =>
+    options.UseSqlServer(connectionString));
+
 SerilogConfiguration.ConfigureSerilog(builder.Configuration, "Identity");
 builder.Host.UseSerilog();
 
