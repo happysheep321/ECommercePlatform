@@ -16,7 +16,7 @@ namespace Ecommerce.Identity.API.Infrastructure.EntityConfigs
                 .IsRequired()
                 .HasMaxLength(100);
 
-            builder.Property(u => u.PassordHash)
+            builder.Property(u => u.PasswordHash)
                 .IsRequired()
                 .HasMaxLength(256);
 
@@ -53,15 +53,15 @@ namespace Ecommerce.Identity.API.Infrastructure.EntityConfigs
                     .HasColumnName("Profile_Gender");
             });
 
-            // 配置RoleIds为私有字段集合映射（简单示范）
-            builder.Metadata.FindNavigation(nameof(User.RoleIds))?.SetPropertyAccessMode(PropertyAccessMode.Field);
-            builder.OwnsMany<Guid>("roleIds", b =>
-            {
-                b.WithOwner().HasForeignKey("UserId");
-                b.Property<Guid>("Id");
-                b.HasKey("Id");
-                b.ToTable("UserRoles");
-            });
+            // 配置RoleIds为私有字段集合映射
+            builder.Metadata
+                .FindNavigation(nameof(User.UserRoles))?
+                .SetPropertyAccessMode(PropertyAccessMode.Field);
+            builder.HasMany(u => u.UserRoles)
+               .WithOne(ur => ur.User)
+               .HasForeignKey(ur => ur.UserId)
+               .IsRequired();
+
 
             // 配置地址为导航属性
             builder.HasMany(u => u.Addresses)

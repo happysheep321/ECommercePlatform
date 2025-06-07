@@ -1,4 +1,5 @@
-﻿using Ecommerce.Identity.API.Domain.ValueObjects;
+﻿using Ecommerce.Identity.API.Domain.Aggregates.RoleAggregate;
+using Ecommerce.Identity.API.Domain.ValueObjects;
 using Ecommerce.SharedKernel.Base;
 using Ecommerce.SharedKernel.Interfaces;
 using ECommerce.SharedKernel.Enums;
@@ -9,7 +10,7 @@ namespace Ecommerce.Identity.API.Domain.Aggregates.UserAggregate
     {
         public required string UserName { get; set; }
 
-        public required string PassordHash { get; set; }
+        public required string PasswordHash { get; set; }
 
         public string? Email { get; set; }
 
@@ -34,22 +35,30 @@ namespace Ecommerce.Identity.API.Domain.Aggregates.UserAggregate
         }
 
         // ==== 用户角色 ====
-        private readonly List<Guid> roleIds = new();
+        private readonly List<UserRole> userRoles = new();
 
-        public IReadOnlyCollection<Guid> RoleIds => roleIds.AsReadOnly();
+        public IReadOnlyCollection<UserRole> UserRoles => userRoles.AsReadOnly();
 
-        public void AddRole(Guid roleId)
+        public void AddRole(Role role)
         {
-            if (roleIds.Contains(roleId))
-                return;
-            roleIds.Add(roleId);
+            if (role == null) throw new ArgumentNullException(nameof(role));
+            if (userRoles.Any(ur => ur.RoleId == role.Id))
+                return; // 已有该角色，不重复添加
+
+            userRoles.Add(new UserRole
+            {
+                User = this,
+                UserId = this.Id,
+                Role = role,
+                RoleId = role.Id
+            });
         }
 
         public void RemoveRole(Guid roleId)
         {
-            if (!roleIds.Contains(roleId))
-                return;
-            roleIds.Remove(roleId);
+            var userRole = userRoles.FirstOrDefault(ur => ur.RoleId == roleId);
+            if (userRole != null)
+                userRoles.Remove(userRole);
         }
 
         // ==== 用户地址 ====
@@ -130,7 +139,7 @@ namespace Ecommerce.Identity.API.Domain.Aggregates.UserAggregate
         {
             Id = Guid.NewGuid(); //聚合根生成的ID
             UserName = userName;
-            PassordHash = passwordHash;
+            PasswordHash = passwordHash;
             Email = email;
         }
     }

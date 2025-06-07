@@ -17,10 +17,8 @@ namespace Ecommerce.Identity.API.Infrastructure.EntityConfigs
             builder.Property(l => l.LoginTime)
                 .IsRequired();
 
-            builder.Property(l => l.IpAddress)
+            builder.Property(l => l.IP)
                 .HasMaxLength(50);
-
-            // 其他字段和索引根据需要添加
         }
     }
 }

@@ -1,5 +1,6 @@
 using Ecommerce.Identity.API.Infrastructure;
 using ECommerce.BuildingBlocks.Logging;
+using Microsoft.EntityFrameworkCore;
 using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
