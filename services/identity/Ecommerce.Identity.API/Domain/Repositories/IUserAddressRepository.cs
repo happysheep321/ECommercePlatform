@@ -6,7 +6,7 @@ namespace Ecommerce.Identity.API.Domain.Repositories
     {
         Task<IEnumerable<UserAddress>> GetByUserIdAsync(Guid userId);
         Task AddAsync(UserAddress address);
-        void Update(UserAddress address);
-        void Delete(UserAddress address);
+        Task UpdateAsync(UserAddress address);
+        Task DeleteAsync(UserAddress address);
     }
 }

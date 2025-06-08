@@ -98,7 +98,7 @@ namespace Ecommerce.Identity.API.Domain.Aggregates.UserAggregate
                 updateAddress.Detail,
                 updateAddress.IsDefault);
 
-            if (updateAddress.IsDefault && !existAddress.IsDefault)
+            if (updateAddress.IsDefault)
             {
                 foreach (var addr in addresses.Where(a => a.Id != existAddress.Id))
                 {
