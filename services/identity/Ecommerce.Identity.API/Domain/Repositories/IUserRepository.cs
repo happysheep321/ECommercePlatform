@@ -7,7 +7,7 @@ namespace Ecommerce.Identity.API.Domain.Repositories
         Task<User?> GetByIdAsync(Guid id);
         Task<User?> GetByUserNameAsync(string userName);
         Task AddAsync(User user);
-        Task UpdateAsync(User user);
-        Task DeleteAsync(User user);
+        void Update(User user);
+        void Delete(User user);
     }
 }

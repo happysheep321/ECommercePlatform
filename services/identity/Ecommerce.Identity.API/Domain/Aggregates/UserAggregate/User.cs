@@ -123,18 +123,20 @@ namespace Ecommerce.Identity.API.Domain.Aggregates.UserAggregate
             addresses.Remove(address);
         }
 
+        // ==== 用户登录日志 ====
+        private readonly List<UserLoginLog> loginLogs = new();
+
+        public IReadOnlyCollection<UserLoginLog> LoginLogs => loginLogs.AsReadOnly();
+
+        public void AddLoginLog(UserLoginLog userLoginLog)
+        {
+            loginLogs.Add(userLoginLog);
+        }
+
+
         // ==== 构造函数 ====
-        /// <summary>
-        /// EF Core无参构造函数
-        /// </summary>
         protected User() { }
 
-        /// <summary>
-        /// 领域构造函数
-        /// </summary>
-        /// <param name="userName">用户名</param>
-        /// <param name="passwordHash">密码</param>
-        /// <param name="email">邮件</param>
         public User(string userName, string passwordHash, string email)
         {
             Id = Guid.NewGuid(); //聚合根生成的ID

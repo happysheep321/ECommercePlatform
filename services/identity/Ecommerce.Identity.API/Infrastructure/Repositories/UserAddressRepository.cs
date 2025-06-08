@@ -28,8 +28,6 @@ namespace Ecommerce.Identity.API.Infrastructure.Repositories
             if (user == null)
                 throw new InvalidOperationException("用户不存在");
             user.AddAddress(userAddress);
-            await this.context.UserAddresses.AddAsync(userAddress);
-            await this.context.SaveChangesAsync();
         }
 
         public async Task UpdateAsync(UserAddress userAddress)
@@ -38,8 +36,6 @@ namespace Ecommerce.Identity.API.Infrastructure.Repositories
             if (user == null)
                 throw new InvalidOperationException("用户不存在");
             user.UpdateAddress(userAddress);
-            this.context.UserAddresses.Update(userAddress);
-            await this.context.SaveChangesAsync();
         }
 
         public async Task DeleteAsync(UserAddress userAddress)
@@ -48,8 +44,6 @@ namespace Ecommerce.Identity.API.Infrastructure.Repositories
             if (user == null)
                 throw new InvalidOperationException("用户不存在");
             user.RemoveAddress(userAddress);
-            this.context.UserAddresses.Remove(userAddress);
-            await this.context.SaveChangesAsync();
         }
     }
 }

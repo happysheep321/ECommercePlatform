@@ -4,7 +4,7 @@ namespace Ecommerce.Identity.API.Domain.Repositories
 {
     public interface IUserLoginLogRepository
     {
-        Task AddAsync(UserLoginLog log);
         Task<IEnumerable<UserLoginLog>> GetByUserIdAsync(Guid userId);
+        Task AddAsync(UserLoginLog log); 
     }
 }
