@@ -9,13 +9,13 @@
   <ItemGroup>
     <Folder Include="Logging\" />
     <Folder Include="Redis\" />
-    <Folder Include="Authentication\" />
     <Folder Include="EventBus\" />
     <Folder Include="Extensions\" />
     <Folder Include="Middlewares\" />
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Cryptography.KeyDerivation" Version="9.0.6" />
     <PackageReference Include="Microsoft.Extensions.Configuration" Version="9.0.4" />
     <PackageReference Include="Serilog.Settings.Configuration" Version="9.0.0" />
     <PackageReference Include="Serilog.Sinks.Console" Version="6.0.0" />

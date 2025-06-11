@@ -1,13 +1,18 @@
+using Ecommerce.Identity.API.Application.Interfaces;
+using Ecommerce.Identity.API.Application.Services;
 using Ecommerce.Identity.API.Infrastructure;
 using ECommerce.BuildingBlocks.Logging;
+using ECommerce.BuildingBolcks.Authentication;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-var connectionString = builder.Configuration.GetConnectionString("UserDb");
+builder.Services.AddScoped<IPasswordHasher, PasswordHasher>();
+builder.Services.AddScoped<IUserService, UserService>();
 
+var connectionString = builder.Configuration.GetConnectionString("UserDb");
 builder.Services.AddDbContextPool<IdentityDbContext>(options =>
     options.UseSqlServer(connectionString));
 
