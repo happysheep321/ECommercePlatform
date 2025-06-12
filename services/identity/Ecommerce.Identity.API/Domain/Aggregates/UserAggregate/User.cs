@@ -8,9 +8,9 @@ namespace Ecommerce.Identity.API.Domain.Aggregates.UserAggregate
 {
     public class User : Entity<Guid>, IAggregateRoot
     {
-        public required string UserName { get; set; }
+        public string UserName { get; set; }
 
-        public required string PasswordHash { get; set; }
+        public string PasswordHash { get; set; }
 
         public string? Email { get; set; }
 
