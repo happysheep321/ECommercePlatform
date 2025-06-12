@@ -27,7 +27,7 @@ namespace Ecommerce.Identity.API.Domain.Aggregates.UserAggregate
         public DateTime RegisterTime { get; set; } = DateTime.UtcNow;
 
         // ==== 用户扩展资料 ====
-        public UserProfile Profile { get; private set; } = new UserProfile("新用户", "", DateTime.UtcNow, Gender.Unspecified);
+        public UserProfile Profile { get; private set; } = new UserProfile("新用户_9527", "", DateTime.UtcNow, Gender.Unspecified);
 
         public void UpdateProfile(UserProfile newProfile)
         {
