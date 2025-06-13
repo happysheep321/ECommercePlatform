@@ -1,4 +1,5 @@
 ﻿using Ecommerce.Identity.API.Application.Commands;
+using Ecommerce.Identity.API.Application.DTOs;
 using Ecommerce.Identity.API.Application.Interfaces;
 using Ecommerce.Identity.API.Domain.Aggregates.UserAggregate;
 using Ecommerce.Identity.API.Domain.Repositories;
@@ -24,11 +25,30 @@ namespace Ecommerce.Identity.API.Application.Services
                 passwordHasher.HashPassword(command.Password),
                 command.Email!
             );
-            // 其他属性如 PhoneNumber、Profile 可通过方法或属性赋值
+
             await userRepository.AddAsync(user);
             return user.Id;
         }
 
+        public async Task<LoginResultDto> LoginAsync(LoginUserCommand command)
+        {
+            var user = await userRepository.GetByUserNameAsync(command.UserName);
+            if (user == null || !passwordHasher.VerifyPassword(user.PasswordHash, command.Password))
+            {
+                throw new UnauthorizedAccessException("用户名或密码错误");
+            }
+
+            var token 
+            return new LoginResultDto
+            {
+                UserId = user.Id,
+                UserName = user.UserName,
+                Email = user.Email,
+                PhoneNumber = user.PhoneNumber,
+                IsEmailConfirmed = user.IsEmailConfirmed,
+                IsPhoneConfirmed = user.IsPhoneConfirmed
+            };
+        }
 
     }
 }
