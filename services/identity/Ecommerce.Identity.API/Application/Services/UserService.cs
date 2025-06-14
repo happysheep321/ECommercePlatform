@@ -3,30 +3,42 @@ using Ecommerce.Identity.API.Application.DTOs;
 using Ecommerce.Identity.API.Application.Interfaces;
 using Ecommerce.Identity.API.Domain.Aggregates.UserAggregate;
 using Ecommerce.Identity.API.Domain.Repositories;
+using Ecommerce.Identity.API.Domain.ValueObjects;
+using Ecommerce.Identity.API.Infrastructure;
 using ECommerce.BuildingBolcks.Authentication;
+using ECommerce.SharedKernel.Enums;
+using ECommerce.SharedKernel.Interfaces;
 
 namespace Ecommerce.Identity.API.Application.Services
 {
     public class UserService:IUserService
     {
         private readonly IUserRepository userRepository;
+        private readonly IRoleRepository roleRepository;
         private readonly IPasswordHasher passwordHasher;
+        private readonly JwtTokenGenerator jwtTokenGenerator;
+        private readonly IUnitOfWork unitOfWork;
 
-        public UserService(IUserRepository userRepository, IPasswordHasher passwordHasher)
+        public UserService(IUserRepository userRepository, IRoleRepository roleRepository, IPasswordHasher passwordHasher, JwtTokenGenerator jwtTokenGenerator,UnitOfWork unitOfWork)
         {
             this.userRepository = userRepository;
+            this.roleRepository = roleRepository;
             this.passwordHasher = passwordHasher;
+            this.jwtTokenGenerator = jwtTokenGenerator;
+            this.unitOfWork = unitOfWork;
         }
 
         public async Task<Guid> RegisterAsync(RegisterUserCommand command)
         {
             var user = new User(
+                Guid.NewGuid(),
                 command.UserName,
                 passwordHasher.HashPassword(command.Password),
                 command.Email!
             );
 
             await userRepository.AddAsync(user);
+            await unitOfWork.SaveChangesAsync();
             return user.Id;
         }
 
@@ -38,17 +50,176 @@ namespace Ecommerce.Identity.API.Application.Services
                 throw new UnauthorizedAccessException("用户名或密码错误");
             }
 
-            var token 
+            var token=jwtTokenGenerator.GenerateToken(user.Id, user.UserName, user.Type, user.Email!, user.PhoneNumber!);
+
             return new LoginResultDto
             {
-                UserId = user.Id,
+                Token=token.Token,
+                Expiration= token.Expiration,
                 UserName = user.UserName,
-                Email = user.Email,
-                PhoneNumber = user.PhoneNumber,
-                IsEmailConfirmed = user.IsEmailConfirmed,
-                IsPhoneConfirmed = user.IsPhoneConfirmed
+                AvatarUrl=user.Profile.AvatarUrl
             };
         }
 
+        public async Task<UserProfileDto> GetProfileAsync(Guid userId)
+        {
+            var user = await userRepository.GetByIdAsync(userId);
+            if (user == null)
+            {
+                throw new UnauthorizedAccessException("用户不存在");
+            }
+            return new UserProfileDto
+            {
+                UserId = userId,
+                UserName = user.UserName,
+                Email = user.Email,
+                Phone = user.PhoneNumber!,
+                AvatarUrl = user.Profile.AvatarUrl,
+                Addresses = user.Addresses.Select(addr => new UserAddressDto
+                {
+                    AddressId = addr.Id,
+                    ReceiverName = addr.ReceiverName,
+                    Phone = addr.Phone,
+                    Region = addr.Region,
+                    Detail = addr.Detail,
+                    IsDefault = addr.IsDefault,
+                }).ToList(),
+                Roles = user.UserRoles.Select(ur => new RoleDto
+                {
+                    RoleId = ur.RoleId,
+                    Name = ur.Role.Name,
+                    Description = ur.Role.Description,
+                }).ToList(),
+            };
+        }
+
+        public async Task UpdateProfileAsync(Guid userId, UpdateUserProfileCommand command)
+        {
+            var user=await userRepository.GetByIdAsync(userId);
+            if (user == null) throw new UnauthorizedAccessException("用户不存在");
+
+            if (!string.IsNullOrWhiteSpace(command.Email))
+            {
+                user.Email = command.Email;
+            }
+
+            if (!string.IsNullOrWhiteSpace(command.Phone))
+            {
+                user.PhoneNumber = command.Phone;
+            }
+
+            var currentProfile = user.Profile;
+
+            string updatedNickName = string.IsNullOrWhiteSpace(command.NickName) ? currentProfile.NickName : command.NickName.Trim();
+            string updatedAvatarUrl = string.IsNullOrWhiteSpace(command.AvatarUrl) ? currentProfile.AvatarUrl : command.AvatarUrl;
+            Gender updatedGender = command.Gender.HasValue ? (Gender)command.Gender.Value : currentProfile.Gender;
+
+            var updateProfile = new UserProfile(
+                updatedNickName,
+                updatedAvatarUrl,
+                currentProfile.Birthday,
+                updatedGender
+                );
+
+            user.UpdateProfile( updateProfile );
+            userRepository.Update(user);
+            await unitOfWork.SaveChangesAsync();
+        }
+
+        public async Task AddAddressAsync(Guid userId, AddUserAddressCommand command)
+        {
+            var user = await userRepository.GetByIdAsync(userId);
+            if (user == null)
+                throw new UnauthorizedAccessException("用户不存在");
+
+            var newAddress = new UserAddress(
+                Guid.NewGuid(),
+                userId,
+                command.ReceiverName,
+                command.Phone,
+                command.Region,
+                command.Detail,
+                command.IsDefault
+            );
+
+            user.AddAddress(newAddress);
+            userRepository.Update(user);
+            await unitOfWork.SaveChangesAsync();
+        }
+
+        public async Task UpdateAddressAsync(Guid userId, UpdateUserAddressCommand command)
+        {
+            var user = await userRepository.GetByIdAsync(userId);
+            if (user == null)
+                throw new UnauthorizedAccessException("用户不存在");
+
+            var updatedAddress = new UserAddress(
+                command.AddressId,
+                userId,
+                command.ReceiverName,
+                command.Phone,
+                command.Region,
+                command.Detail,
+                command.IsDefault
+            );
+
+            user.UpdateAddress(updatedAddress);
+            userRepository.Update(user);
+            await unitOfWork.SaveChangesAsync();
+        }
+
+        public async Task RemoveAddressAsync(Guid userId, Guid addressId)
+        {
+            var user = await userRepository.GetByIdAsync(userId);
+            if (user == null)
+                throw new UnauthorizedAccessException("用户不存在");
+
+            var addressToRemove = user.Addresses.FirstOrDefault(a => a.Id == addressId);
+            if (addressToRemove == null)
+                throw new InvalidOperationException("地址不存在");
+
+            user.RemoveAddress(addressToRemove);
+            userRepository.Update(user);
+            await unitOfWork.SaveChangesAsync();
+        }
+
+        public async Task AssignRoleAsync(Guid userId, Guid roleId)
+        {
+            var user = await userRepository.GetByIdAsync(userId);
+            if (user == null)
+                throw new UnauthorizedAccessException("用户不存在");
+
+            // 需要从角色仓储获取 Role 实体，假设你有角色仓储
+            var role = await roleRepository.GetByIdAsync(roleId);
+            if (role == null)
+                throw new InvalidOperationException("角色不存在");
+
+            user.AddRole(role);
+            userRepository.Update(user);
+            await unitOfWork.SaveChangesAsync();
+        }
+
+        public async Task RemoveRoleAsync(Guid userId, Guid roleId)
+        {
+            var user = await userRepository.GetByIdAsync(userId);
+            if (user == null)
+                throw new UnauthorizedAccessException("用户不存在");
+
+            user.RemoveRole(roleId);
+            userRepository.Update(user);
+            await unitOfWork.SaveChangesAsync();
+        }
+
+        public async Task LogLoginAsync(Guid userId, string ip, string device, string location)
+        {
+            var user = await userRepository.GetByIdAsync(userId);
+            if (user == null)
+                throw new UnauthorizedAccessException("用户不存在");
+
+            var loginLog = new UserLoginLog(userId, ip, device, location);
+            user.AddLoginLog(loginLog);
+            userRepository.Update(user);
+            await unitOfWork.SaveChangesAsync();
+        }
     }
 }

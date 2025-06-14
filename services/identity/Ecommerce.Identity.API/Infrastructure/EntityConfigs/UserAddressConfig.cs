@@ -22,16 +22,19 @@ namespace Ecommerce.Identity.API.Infrastructure.EntityConfigs
                 .IsRequired()
                 .HasMaxLength(20);
 
-            builder.Property(a => a.Region)
-                .IsRequired()
-                .HasMaxLength(200);
-
             builder.Property(a => a.Detail)
                 .IsRequired()
                 .HasMaxLength(500);
 
             builder.Property(a => a.IsDefault)
                 .IsRequired();
+
+            builder.OwnsOne(x => x.Region, region =>
+            {
+                region.Property(r => r.Province).HasColumnName("Province").IsRequired();
+                region.Property(r => r.City).HasColumnName("City").IsRequired();
+                region.Property(r => r.District).HasColumnName("District").IsRequired();
+            });
         }
     }
 }

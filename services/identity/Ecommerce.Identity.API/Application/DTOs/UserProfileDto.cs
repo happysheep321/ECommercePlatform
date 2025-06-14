@@ -8,6 +8,6 @@ namespace Ecommerce.Identity.API.Application.DTOs
         public string Phone { get; set; } = default!;
         public string? AvatarUrl { get; set; }
         public List<UserAddressDto> Addresses { get; set; } = new();
-        public List<string> Roles { get; set; } = new();
+        public List<RoleDto> Roles { get; set; } = new();
     }
 }

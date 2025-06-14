@@ -24,9 +24,9 @@ namespace Ecommerce.Identity.API.Domain.Aggregates.RoleAggregate
         /// </summary>
         /// <param name="name">角色名</param>
         /// <param name="description">角色描述</param>
-        public Role(string name, string description)
+        public Role(Guid id, string name, string description)
         {
-            Id = Guid.NewGuid(); // 聚合根生成的ID
+            Id = id; // 聚合根生成的ID
             Name = name;
             Description = description;
         }

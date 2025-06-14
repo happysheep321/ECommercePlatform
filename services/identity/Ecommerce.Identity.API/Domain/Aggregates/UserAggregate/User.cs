@@ -137,9 +137,9 @@ namespace Ecommerce.Identity.API.Domain.Aggregates.UserAggregate
         // ==== 构造函数 ====
         protected User() { }
 
-        public User(string userName, string passwordHash, string email)
+        public User(Guid id, string userName, string passwordHash, string email)
         {
-            Id = Guid.NewGuid(); //聚合根生成的ID
+            Id = id; //聚合根生成的ID
             UserName = userName;
             PasswordHash = passwordHash;
             Email = email;

@@ -22,11 +22,11 @@ namespace Ecommerce.Identity.API.Application.Interfaces
         Task AssignRoleAsync(Guid userId, Guid roleId);
         Task RemoveRoleAsync(Guid userId, Guid roleId);
 
-        // 通知订阅
-        Task SubscribeAsync(Guid userId);
-        Task UnsubscribeAsync(Guid userId);
+        //// 通知订阅
+        //Task SubscribeAsync(Guid userId);
+        //Task UnsubscribeAsync(Guid userId);
 
         // 审计日志
-        Task LogLoginAsync(Guid userId, string ip, string userAgent);
+        Task LogLoginAsync(Guid userId, string ip, string device, string location);
     }
 }

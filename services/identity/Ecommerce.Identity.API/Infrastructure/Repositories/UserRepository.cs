@@ -15,7 +15,11 @@ namespace Ecommerce.Identity.API.Infrastructure.Repositories
 
         public async Task<User?> GetByIdAsync(Guid id)
         {
-            return await this.context.Users.FirstOrDefaultAsync(u => u.Id == id);
+            return await this.context.Users
+                .Include(u=>u.Addresses)
+                .Include(u=>u.Profile)
+                .Include(u=>u.UserRoles)
+                .FirstOrDefaultAsync(u => u.Id == id);
         }
 
         public async Task<User?> GetByUserNameAsync(string userName)

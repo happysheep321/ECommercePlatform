@@ -1,4 +1,5 @@
-﻿using Ecommerce.SharedKernel.Base;
+﻿using Ecommerce.Identity.API.Domain.ValueObjects;
+using Ecommerce.SharedKernel.Base;
 
 namespace Ecommerce.Identity.API.Domain.Aggregates.UserAggregate
 {
@@ -8,7 +9,7 @@ namespace Ecommerce.Identity.API.Domain.Aggregates.UserAggregate
 
         public string ReceiverName { get; private set; } = string.Empty;
         public string Phone { get; private set; } = string.Empty;
-        public string Region { get; private set; } = string.Empty;
+        public Region Region { get; private set; }
         public string Detail { get; private set; } = string.Empty;
 
         public bool IsDefault { get; private set; }
@@ -18,9 +19,9 @@ namespace Ecommerce.Identity.API.Domain.Aggregates.UserAggregate
             
         }
 
-        public UserAddress(Guid userId, string receiverName, string phone, string region, string detail, bool isDefault)
+        public UserAddress(Guid id,Guid userId, string receiverName, string phone, Region region, string detail, bool isDefault)
         {
-            Id = Guid.NewGuid(); // 聚合根生成的ID
+            Id = id;
             UserId = userId;
             ReceiverName = receiverName;
             Phone = phone;
@@ -29,7 +30,7 @@ namespace Ecommerce.Identity.API.Domain.Aggregates.UserAggregate
             IsDefault = isDefault;
         }
 
-        public void UpdateAddress(string receiverName, string phone, string region, string detail, bool isDefault)
+        public void UpdateAddress(string receiverName, string phone, Region region, string detail, bool isDefault)
         {
             ReceiverName = receiverName;
             Phone = phone;

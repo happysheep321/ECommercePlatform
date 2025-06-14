@@ -10,9 +10,9 @@ namespace Ecommerce.Identity.API.Domain.Aggregates.PermissionAggregate
 
         public Permission() { }
 
-        public Permission(string name, string? description = null)
+        public Permission(Guid id, string name, string? description = null)
         {
-            Id = Guid.NewGuid();
+            Id = id;
             Name = name;
             Description = description;
         }
