@@ -7,6 +7,9 @@ using Microsoft.EntityFrameworkCore;
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
+using Ecommerce.Identity.API.Domain.Repositories;
+using Ecommerce.Identity.API.Infrastructure.Repositories;
+using ECommerce.SharedKernel.Interfaces;
 
 namespace Ecommerce.Identity.API.Extensions
 {
@@ -22,6 +25,7 @@ namespace Ecommerce.Identity.API.Extensions
             services.AddDatabase(config);
             services.AddJwtAuthentication(config);
             services.AddCustomLogging(config, "Identity");
+            services.AddHttpContextAccessor();
 
             services.AddControllers();
             services.AddEndpointsApiExplorer();
@@ -33,6 +37,14 @@ namespace Ecommerce.Identity.API.Extensions
         {
             services.AddSingleton<JwtTokenGenerator>();
             services.AddScoped<IPasswordHasher, PasswordHasher>();
+            services.AddScoped<IUnitOfWork, UnitOfWork>();
+            services.AddScoped<IUserRepository, UserRepository>();
+            services.AddScoped<IUserAddressRepository, UserAddressRepository>();
+            services.AddScoped<IUserLoginLogRepository, UserLoginLogRepository>();
+            services.AddScoped<IUserRoleRepository, UserRoleRepository>();
+            services.AddScoped<IRoleRepository, RoleRepository>();
+            services.AddScoped<IRolePermissionRepository, RolePermissionRepository>();
+            services.AddScoped<IPermissionRepository, PermissionRepository>();
             services.AddScoped<IUserService, UserService>();
         }
 

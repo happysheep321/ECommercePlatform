@@ -21,7 +21,7 @@ namespace Ecommerce.Identity.API.Application.Services
         private readonly IUnitOfWork unitOfWork;
         private readonly IHttpContextAccessor httpContextAccessor;
 
-        public UserService(IUserRepository userRepository,IUserLoginLogRepository loginLogRepository, IRoleRepository roleRepository, IPasswordHasher passwordHasher, JwtTokenGenerator jwtTokenGenerator,UnitOfWork unitOfWork, IHttpContextAccessor httpContextAccessor)
+        public UserService(IUserRepository userRepository,IUserLoginLogRepository loginLogRepository, IRoleRepository roleRepository, IPasswordHasher passwordHasher, JwtTokenGenerator jwtTokenGenerator,IUnitOfWork unitOfWork, IHttpContextAccessor httpContextAccessor)
         {
             this.userRepository = userRepository;
             this.loginLogRepository = loginLogRepository;
