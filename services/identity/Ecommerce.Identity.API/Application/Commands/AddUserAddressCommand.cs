@@ -12,5 +12,4 @@ namespace Ecommerce.Identity.API.Application.Commands
         public string Detail { get; private set; }
         public bool IsDefault { get; private set; }
     }
-
 }

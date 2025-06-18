@@ -4,6 +4,7 @@ using Ecommerce.Identity.API.Application.Interfaces;
 using Ecommerce.Identity.API.Application.Services;
 using Ecommerce.Identity.API.Infrastructure;
 using Microsoft.EntityFrameworkCore;
+using FluentValidation;
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
@@ -12,6 +13,7 @@ using Ecommerce.Identity.API.Infrastructure.Repositories;
 using ECommerce.SharedKernel.Interfaces;
 using MediatR;
 using Ecommerce.Identity.API.Infrastructure.Behaviors;
+using Ecommerce.Identity.API.Application.Validators;
 
 namespace Ecommerce.Identity.API.Extensions
 {
@@ -69,6 +71,11 @@ namespace Ecommerce.Identity.API.Extensions
                 cfg.RegisterServicesFromAssemblyContaining<IUserService>();
             });
             services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
+            services.AddValidatorsFromAssemblyContaining<RegisterUserCommandValidator>();
+            services.AddValidatorsFromAssemblyContaining<LoginUserCommandValidator>();
+            services.AddValidatorsFromAssemblyContaining<AddUserAddressCommandValidator>();
+            services.AddValidatorsFromAssemblyContaining<UpdateUserAddressCommandValidator>();
+            services.AddValidatorsFromAssemblyContaining<UpdateUserProfileCommandValidator>();
         }
 
         private static void AddDatabase(this IServiceCollection services, IConfiguration config)
