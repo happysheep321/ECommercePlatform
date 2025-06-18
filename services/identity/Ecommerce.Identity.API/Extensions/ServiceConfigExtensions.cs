@@ -29,7 +29,34 @@ namespace Ecommerce.Identity.API.Extensions
 
             services.AddControllers();
             services.AddEndpointsApiExplorer();
-            services.AddSwaggerGen();
+            services.AddSwaggerGen(c =>
+            {
+                c.SwaggerDoc("v1", new() { Title = "Ecommerce.Identity.API", Version = "v1" });
+
+                c.AddSecurityDefinition("Bearer", new Microsoft.OpenApi.Models.OpenApiSecurityScheme
+                {
+                    Description="输入格式: Bearer {token}",
+                    Name = "Authorization",
+                    In = Microsoft.OpenApi.Models.ParameterLocation.Header,
+                    Type= Microsoft.OpenApi.Models.SecuritySchemeType.ApiKey,
+                    Scheme= "Bearer"
+                });
+
+                c.AddSecurityRequirement(new Microsoft.OpenApi.Models.OpenApiSecurityRequirement
+                {
+                    {
+                          new Microsoft.OpenApi.Models.OpenApiSecurityScheme
+                        {
+                            Reference = new Microsoft.OpenApi.Models.OpenApiReference
+                            {
+                                Type = Microsoft.OpenApi.Models.ReferenceType.SecurityScheme,
+                                Id = "Bearer"
+                            }
+                        },
+                        Array.Empty<string>() // 这里可以指定需要的作用域，如果没有则传空数组
+                    }
+                });
+            });
         }
 
         // 1. 应用服务（DI）
@@ -71,6 +98,9 @@ namespace Ecommerce.Identity.API.Extensions
             })
             .AddJwtBearer(options =>
             {
+                options.RequireHttpsMetadata=false; // 开发环境可以关闭 HTTPS 要求
+                options.SaveToken = true;
+
                 options.TokenValidationParameters = new TokenValidationParameters
                 {
                     ValidateIssuer = true,
@@ -79,7 +109,8 @@ namespace Ecommerce.Identity.API.Extensions
                     ValidateIssuerSigningKey = true,
                     ValidIssuer = jwtSettings.Issuer,
                     ValidAudience = jwtSettings.Audience,
-                    IssuerSigningKey = new SymmetricSecurityKey(key)
+                    IssuerSigningKey = new SymmetricSecurityKey(key),
+                    ClockSkew=TimeSpan.Zero // 关闭默认的时间偏移，避免令牌过期问题
                 };
             });
         }
