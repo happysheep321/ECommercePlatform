@@ -10,6 +10,8 @@ using Microsoft.IdentityModel.Tokens;
 using Ecommerce.Identity.API.Domain.Repositories;
 using Ecommerce.Identity.API.Infrastructure.Repositories;
 using ECommerce.SharedKernel.Interfaces;
+using MediatR;
+using Ecommerce.Identity.API.Infrastructure.Behaviors;
 
 namespace Ecommerce.Identity.API.Extensions
 {
@@ -21,50 +23,31 @@ namespace Ecommerce.Identity.API.Extensions
             var config = builder.Configuration;
             var env = builder.Environment;
 
-            services.AddApplicationServices();
+            services.AddInfrastructureServices();
+            services.AddRepositories();
+            services.AddDomainServices();
+            services.AddMediatRAndBehaviors();
+
             services.AddDatabase(config);
             services.AddJwtAuthentication(config);
             services.AddCustomLogging(config, "Identity");
-            services.AddHttpContextAccessor();
 
+            services.AddHttpContextAccessor();
             services.AddControllers();
             services.AddEndpointsApiExplorer();
-            services.AddSwaggerGen(c =>
-            {
-                c.SwaggerDoc("v1", new() { Title = "Ecommerce.Identity.API", Version = "v1" });
 
-                c.AddSecurityDefinition("Bearer", new Microsoft.OpenApi.Models.OpenApiSecurityScheme
-                {
-                    Description="输入格式: Bearer {token}",
-                    Name = "Authorization",
-                    In = Microsoft.OpenApi.Models.ParameterLocation.Header,
-                    Type= Microsoft.OpenApi.Models.SecuritySchemeType.ApiKey,
-                    Scheme= "Bearer"
-                });
-
-                c.AddSecurityRequirement(new Microsoft.OpenApi.Models.OpenApiSecurityRequirement
-                {
-                    {
-                          new Microsoft.OpenApi.Models.OpenApiSecurityScheme
-                        {
-                            Reference = new Microsoft.OpenApi.Models.OpenApiReference
-                            {
-                                Type = Microsoft.OpenApi.Models.ReferenceType.SecurityScheme,
-                                Id = "Bearer"
-                            }
-                        },
-                        Array.Empty<string>() // 这里可以指定需要的作用域，如果没有则传空数组
-                    }
-                });
-            });
+            services.AddSwaggerSecurity();
         }
 
-        // 1. 应用服务（DI）
-        private static void AddApplicationServices(this IServiceCollection services)
+        private static void AddInfrastructureServices(this IServiceCollection services)
         {
             services.AddSingleton<JwtTokenGenerator>();
             services.AddScoped<IPasswordHasher, PasswordHasher>();
             services.AddScoped<IUnitOfWork, UnitOfWork>();
+        }
+
+        private static void AddRepositories(this IServiceCollection services)
+        {
             services.AddScoped<IUserRepository, UserRepository>();
             services.AddScoped<IUserAddressRepository, UserAddressRepository>();
             services.AddScoped<IUserLoginLogRepository, UserLoginLogRepository>();
@@ -72,10 +55,22 @@ namespace Ecommerce.Identity.API.Extensions
             services.AddScoped<IRoleRepository, RoleRepository>();
             services.AddScoped<IRolePermissionRepository, RolePermissionRepository>();
             services.AddScoped<IPermissionRepository, PermissionRepository>();
+        }
+
+        private static void AddDomainServices(this IServiceCollection services)
+        {
             services.AddScoped<IUserService, UserService>();
         }
 
-        // 2. 数据库
+        private static void AddMediatRAndBehaviors(this IServiceCollection services)
+        {
+            services.AddMediatR(cfg =>
+            {
+                cfg.RegisterServicesFromAssemblyContaining<IUserService>();
+            });
+            services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
+        }
+
         private static void AddDatabase(this IServiceCollection services, IConfiguration config)
         {
             var connectionString = config.GetConnectionString("UserDb");
@@ -83,7 +78,6 @@ namespace Ecommerce.Identity.API.Extensions
                 options.UseSqlServer(connectionString));
         }
 
-        // 3. JWT 身份验证
         private static void AddJwtAuthentication(this IServiceCollection services, IConfiguration config)
         {
             services.Configure<JwtSettings>(config.GetSection("JwtSettings"));
@@ -115,7 +109,38 @@ namespace Ecommerce.Identity.API.Extensions
             });
         }
 
-        // 4. Serilog 日志
+        private static void AddSwaggerSecurity(this IServiceCollection services)
+        {
+            services.AddSwaggerGen(c =>
+            {
+                c.SwaggerDoc("v1", new() { Title = "Ecommerce.Identity.API", Version = "v1" });
+
+                c.AddSecurityDefinition("Bearer", new Microsoft.OpenApi.Models.OpenApiSecurityScheme
+                {
+                    Description = "输入格式: Bearer {token}",
+                    Name = "Authorization",
+                    In = Microsoft.OpenApi.Models.ParameterLocation.Header,
+                    Type = Microsoft.OpenApi.Models.SecuritySchemeType.ApiKey,
+                    Scheme = "Bearer"
+                });
+
+                c.AddSecurityRequirement(new Microsoft.OpenApi.Models.OpenApiSecurityRequirement
+                {
+                    {
+                          new Microsoft.OpenApi.Models.OpenApiSecurityScheme
+                        {
+                            Reference = new Microsoft.OpenApi.Models.OpenApiReference
+                            {
+                                Type = Microsoft.OpenApi.Models.ReferenceType.SecurityScheme,
+                                Id = "Bearer"
+                            }
+                        },
+                        Array.Empty<string>() // 这里可以指定需要的作用域，如果没有则传空数组
+                    }
+                });
+            });
+        }
+
         private static void AddCustomLogging(this IServiceCollection services, IConfiguration config, string serviceName)
         {
             SerilogConfiguration.ConfigureSerilog(config, serviceName);
