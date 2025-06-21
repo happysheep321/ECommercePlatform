@@ -6,6 +6,7 @@ namespace Ecommerce.Identity.API.Domain.Repositories
     {
         Task<User?> GetByIdAsync(Guid id);
         Task<User?> GetByUserNameAsync(string userName);
+        Task<bool> ExistsByPhoneAsync(string phone);
         Task AddAsync(User user);
         void Update(User user);
         void Delete(User user);

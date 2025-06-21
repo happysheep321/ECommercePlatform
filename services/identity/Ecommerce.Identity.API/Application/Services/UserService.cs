@@ -4,8 +4,8 @@ using Ecommerce.Identity.API.Application.Interfaces;
 using Ecommerce.Identity.API.Domain.Aggregates.UserAggregate;
 using Ecommerce.Identity.API.Domain.Repositories;
 using Ecommerce.Identity.API.Domain.ValueObjects;
-using Ecommerce.Identity.API.Infrastructure;
 using ECommerce.BuildingBolcks.Authentication;
+using ECommerce.BuildingBolcks.Redis;
 using ECommerce.SharedKernel.Enums;
 using ECommerce.SharedKernel.Interfaces;
 
@@ -18,22 +18,33 @@ namespace Ecommerce.Identity.API.Application.Services
         private readonly IRoleRepository roleRepository;
         private readonly IPasswordHasher passwordHasher;
         private readonly JwtTokenGenerator jwtTokenGenerator;
+        private readonly ISmsCodeService smsCodeService;
+        private readonly IRedisHelper redisHelper;
         private readonly IUnitOfWork unitOfWork;
         private readonly IHttpContextAccessor httpContextAccessor;
 
-        public UserService(IUserRepository userRepository,IUserLoginLogRepository loginLogRepository, IRoleRepository roleRepository, IPasswordHasher passwordHasher, JwtTokenGenerator jwtTokenGenerator,IUnitOfWork unitOfWork, IHttpContextAccessor httpContextAccessor)
+        public UserService(IUserRepository userRepository,IUserLoginLogRepository loginLogRepository, IRoleRepository roleRepository, IPasswordHasher passwordHasher, JwtTokenGenerator jwtTokenGenerator,IRedisHelper redisHelper,IUnitOfWork unitOfWork, IHttpContextAccessor httpContextAccessor,ISmsCodeService smsCodeService)
         {
             this.userRepository = userRepository;
             this.loginLogRepository = loginLogRepository;
             this.roleRepository = roleRepository;
             this.passwordHasher = passwordHasher;
             this.jwtTokenGenerator = jwtTokenGenerator;
+            this.redisHelper = redisHelper;
+            this.smsCodeService = smsCodeService;
             this.unitOfWork = unitOfWork;
             this.httpContextAccessor = httpContextAccessor;
         }
 
         public async Task<Guid> RegisterAsync(RegisterUserCommand command)
         {
+            if (await userRepository.ExistsByPhoneAsync(command.Phone))
+                throw new InvalidOperationException("手机号已注册");
+
+            var isCodeValid = await smsCodeService.VerifyCodeAsync(command.Phone, command.PhoneVerifyCode);
+            if (!isCodeValid)
+                throw new InvalidOperationException("短信验证码无效或已过期");
+
             var user = new User(
                 Guid.NewGuid(),
                 command.UserName,
@@ -41,8 +52,13 @@ namespace Ecommerce.Identity.API.Application.Services
                 command.Email!
             );
 
+            var buyerRole = await roleRepository.GetByNameAsync("Buyer");
+            if (buyerRole != null)
+                user.AddRole(buyerRole);
+
             await userRepository.AddAsync(user);
             await unitOfWork.SaveChangesAsync();
+            await redisHelper.DeleteAsync($"verify:code:register:{command.Phone}");
             return user.Id;
         }
 

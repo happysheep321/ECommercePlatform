@@ -14,6 +14,9 @@ using ECommerce.SharedKernel.Interfaces;
 using MediatR;
 using Ecommerce.Identity.API.Infrastructure.Behaviors;
 using Ecommerce.Identity.API.Application.Validators;
+using ECommerce.BuildingBolcks.Redis;
+using StackExchange.Redis;
+using Ecommerce.Identity.API.Infrastructure.Configurations;
 
 namespace Ecommerce.Identity.API.Extensions
 {
@@ -39,6 +42,9 @@ namespace Ecommerce.Identity.API.Extensions
             services.AddEndpointsApiExplorer();
 
             services.AddSwaggerSecurity();
+
+            services.Configure<TwilioSettings>(config.GetSection("Twilio"));
+            services.AddTransient<ISmsSender, TwilioSmsSender>();
         }
 
         private static void AddInfrastructureServices(this IServiceCollection services)
@@ -46,6 +52,13 @@ namespace Ecommerce.Identity.API.Extensions
             services.AddSingleton<JwtTokenGenerator>();
             services.AddScoped<IPasswordHasher, PasswordHasher>();
             services.AddScoped<IUnitOfWork, UnitOfWork>();
+
+            services.AddSingleton<IConnectionMultiplexer>(sp =>
+            {
+                var configuration = sp.GetRequiredService<IConfiguration>().GetConnectionString("Redis");
+                return ConnectionMultiplexer.Connect(configuration!);
+            });
+            services.AddScoped<IRedisHelper, RedisHelper>();
         }
 
         private static void AddRepositories(this IServiceCollection services)

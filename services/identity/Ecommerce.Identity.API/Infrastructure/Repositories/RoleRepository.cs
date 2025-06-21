@@ -18,6 +18,11 @@ namespace Ecommerce.Identity.API.Infrastructure.Repositories
             return await this.context.Roles.FirstOrDefaultAsync(r => r.Id == id);
         }
 
+        public async Task<Role?> GetByNameAsync(string name)
+        {
+            return await this.context.Roles.FirstOrDefaultAsync(r => r.Name == name);
+        }
+
         public async Task AddAsync(Role role)
         {
             await this.context.Roles.AddAsync(role);
