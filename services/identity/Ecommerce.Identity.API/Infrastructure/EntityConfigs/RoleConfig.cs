@@ -26,9 +26,10 @@ namespace Ecommerce.Identity.API.Infrastructure.EntityConfigs
                 .FindNavigation(nameof(Role.RolePermissions))?
                 .SetPropertyAccessMode(PropertyAccessMode.Field);
 
-            builder.HasMany<RolePermission>("Permissions")
-                .WithOne(rp=>rp.Role)
-                .HasForeignKey(rp=>rp.RoleId)
+            builder
+                .HasMany(r => r.RolePermissions)
+                .WithOne(rp => rp.Role)
+                .HasForeignKey(rp => rp.RoleId)
                 .OnDelete(DeleteBehavior.Cascade);
         }
     }
