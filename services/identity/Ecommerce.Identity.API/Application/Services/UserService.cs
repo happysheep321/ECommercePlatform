@@ -14,7 +14,6 @@ namespace Ecommerce.Identity.API.Application.Services
     public class UserService:IUserService
     {
         private readonly IUserRepository userRepository;
-        private readonly IUserLoginLogRepository loginLogRepository;
         private readonly IRoleRepository roleRepository;
         private readonly IPasswordHasher passwordHasher;
         private readonly JwtTokenGenerator jwtTokenGenerator;
@@ -23,10 +22,9 @@ namespace Ecommerce.Identity.API.Application.Services
         private readonly IUnitOfWork unitOfWork;
         private readonly IHttpContextAccessor httpContextAccessor;
 
-        public UserService(IUserRepository userRepository,IUserLoginLogRepository loginLogRepository, IRoleRepository roleRepository, IPasswordHasher passwordHasher, JwtTokenGenerator jwtTokenGenerator,IRedisHelper redisHelper,IUnitOfWork unitOfWork, IHttpContextAccessor httpContextAccessor,ISmsCodeService smsCodeService)
+        public UserService(IUserRepository userRepository, IRoleRepository roleRepository, IPasswordHasher passwordHasher, JwtTokenGenerator jwtTokenGenerator,IRedisHelper redisHelper,IUnitOfWork unitOfWork, IHttpContextAccessor httpContextAccessor,ISmsCodeService smsCodeService)
         {
             this.userRepository = userRepository;
-            this.loginLogRepository = loginLogRepository;
             this.roleRepository = roleRepository;
             this.passwordHasher = passwordHasher;
             this.jwtTokenGenerator = jwtTokenGenerator;
@@ -70,11 +68,13 @@ namespace Ecommerce.Identity.API.Application.Services
                 throw new UnauthorizedAccessException("用户名或密码错误");
             }
 
-            var token=jwtTokenGenerator.GenerateToken(user.Id, user.UserName, user.Type, user.Email!, user.PhoneNumber!);
+            var token = jwtTokenGenerator.GenerateToken(user.Id, user.UserName, user.Type, user.Email!, user.PhoneNumber!);
             var ip = httpContextAccessor.HttpContext?.Connection.RemoteIpAddress?.ToString() ?? "unknown";
             var device = httpContextAccessor.HttpContext?.Request.Headers["User-Agent"].ToString() ?? "unknown";
 
-            await loginLogRepository.AddAsync(new UserLoginLog(Guid.NewGuid(),ip,device));
+            user.AddLoginLog(new UserLoginLog(user.Id, ip, device, "未知地区"));
+
+            userRepository.Update(user);
             await unitOfWork.SaveChangesAsync();
 
             return new LoginResultDto
@@ -235,16 +235,16 @@ namespace Ecommerce.Identity.API.Application.Services
             await unitOfWork.SaveChangesAsync();
         }
 
-        //public async Task LogLoginAsync(Guid userId, string ip, string device, string location)
-        //{
-        //    var user = await userRepository.GetByIdAsync(userId);
-        //    if (user == null)
-        //        throw new UnauthorizedAccessException("用户不存在");
+        public async Task AddLoginLogAsync(Guid userId, string ip, string device, string location)
+        {
+            var user = await userRepository.GetByIdAsync(userId);
+            if (user == null)
+                throw new UnauthorizedAccessException("用户不存在");
 
-        //    var loginLog = new UserLoginLog(userId, ip, device, location);
-        //    user.AddLoginLog(loginLog);
-        //    userRepository.Update(user);
-        //    await unitOfWork.SaveChangesAsync();
-        //}
+            var loginLog = new UserLoginLog(userId, ip, device, location);
+            user.AddLoginLog(loginLog);
+            userRepository.Update(user);
+            await unitOfWork.SaveChangesAsync();
+        }
     }
 }

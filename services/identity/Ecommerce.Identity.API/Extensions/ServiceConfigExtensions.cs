@@ -64,8 +64,6 @@ namespace Ecommerce.Identity.API.Extensions
         private static void AddRepositories(this IServiceCollection services)
         {
             services.AddScoped<IUserRepository, UserRepository>();
-            services.AddScoped<IUserAddressRepository, UserAddressRepository>();
-            services.AddScoped<IUserLoginLogRepository, UserLoginLogRepository>();
             services.AddScoped<IUserRoleRepository, UserRoleRepository>();
             services.AddScoped<IRoleRepository, RoleRepository>();
             services.AddScoped<IRolePermissionRepository, RolePermissionRepository>();

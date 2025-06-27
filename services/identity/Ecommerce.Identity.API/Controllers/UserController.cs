@@ -150,5 +150,25 @@ namespace Ecommerce.Identity.API.Controllers
                 return StatusCode(500, "服务器内部错误");
             }
         }
+
+        [HttpPost("{userId}/loginlog")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> AddLoginLogAsync(Guid userId, [FromBody] string? location)
+        {
+            try
+            {
+                var ip = HttpContext.Connection.RemoteIpAddress?.ToString();
+                var device = Request.Headers["User-Agent"].ToString();
+
+                await userService.AddLoginLogAsync(userId, ip ?? "Unknown", device, location ?? "Unknown");
+                return NoContent();
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "添加登录日志失败，UserId: {UserId}, IP: {IP}, Device: {Device}, Location: {Location}", userId, HttpContext.Connection.RemoteIpAddress, Request.Headers["User-Agent"], location);
+                return StatusCode(StatusCodes.Status500InternalServerError, "服务器内部错误");
+            }
+        }
     }
 }
