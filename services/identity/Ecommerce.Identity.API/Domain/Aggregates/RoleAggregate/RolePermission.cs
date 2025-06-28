@@ -7,7 +7,7 @@ namespace Ecommerce.Identity.API.Domain.Aggregates.RoleAggregate
         public Guid RoleId { get; set; }
         public Guid PermissionId { get; set; }
 
-        public required Role Role { get; set; }
-        public required Permission Permission { get; set; }
+        public Role Role { get; set; }
+        public Permission Permission { get; set; }
     }
 }

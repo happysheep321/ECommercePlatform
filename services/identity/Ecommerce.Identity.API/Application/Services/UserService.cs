@@ -47,12 +47,21 @@ namespace Ecommerce.Identity.API.Application.Services
                 Guid.NewGuid(),
                 command.UserName,
                 passwordHasher.HashPassword(command.Password),
-                command.Email!
+                command.Email!,
+                command.UserType
             );
 
-            var buyerRole = await roleRepository.GetByNameAsync("Buyer");
-            if (buyerRole != null)
-                user.AddRole(buyerRole);
+            string defaultRole = command.UserType switch
+            {
+                UserType.Buyer=> "Buyer",
+                UserType.Seller => "Seller",
+                UserType.Admin =>"Admin",
+                _ => throw new InvalidOperationException("未知的用户类型")
+            };
+
+            var role = await roleRepository.GetByNameAsync(defaultRole);
+            if (role != null)
+                user.AddRole(role);
 
             await userRepository.AddAsync(user);
             await unitOfWork.SaveChangesAsync();

@@ -4,6 +4,7 @@ using Ecommerce.Identity.API.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Ecommerce.Identity.API.Migrations
 {
     [DbContext(typeof(IdentityDbContext))]
-    partial class IdentityDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250627230624_InitialCreate")]
+    partial class InitialCreate
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -39,38 +42,6 @@ namespace Ecommerce.Identity.API.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Permissions", (string)null);
-
-                    b.HasData(
-                        new
-                        {
-                            Id = new Guid("aaaa1111-0000-0000-0000-000000000001"),
-                            Description = "查看用户",
-                            Name = "User.View"
-                        },
-                        new
-                        {
-                            Id = new Guid("aaaa1111-0000-0000-0000-000000000002"),
-                            Description = "编辑用户",
-                            Name = "User.Edit"
-                        },
-                        new
-                        {
-                            Id = new Guid("aaaa1111-0000-0000-0000-000000000003"),
-                            Description = "删除用户",
-                            Name = "User.Delete"
-                        },
-                        new
-                        {
-                            Id = new Guid("aaaa1111-0000-0000-0000-000000000004"),
-                            Description = "查看订单",
-                            Name = "Order.View"
-                        },
-                        new
-                        {
-                            Id = new Guid("aaaa1111-0000-0000-0000-000000000005"),
-                            Description = "管理订单",
-                            Name = "Order.Manage"
-                        });
                 });
 
             modelBuilder.Entity("Ecommerce.Identity.API.Domain.Aggregates.RoleAggregate.Role", b =>
@@ -90,32 +61,6 @@ namespace Ecommerce.Identity.API.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Roles", (string)null);
-
-                    b.HasData(
-                        new
-                        {
-                            Id = new Guid("11111111-1111-1111-1111-111111111111"),
-                            Description = "管理员",
-                            Name = "Admin"
-                        },
-                        new
-                        {
-                            Id = new Guid("22222222-2222-2222-2222-222222222222"),
-                            Description = "卖家",
-                            Name = "Seller"
-                        },
-                        new
-                        {
-                            Id = new Guid("33333333-3333-3333-3333-333333333333"),
-                            Description = "买家",
-                            Name = "Buyer"
-                        },
-                        new
-                        {
-                            Id = new Guid("44444444-4444-4444-4444-444444444444"),
-                            Description = "访客",
-                            Name = "Guest"
-                        });
                 });
 
             modelBuilder.Entity("Ecommerce.Identity.API.Domain.Aggregates.RoleAggregate.RolePermission", b =>
@@ -131,43 +76,6 @@ namespace Ecommerce.Identity.API.Migrations
                     b.HasIndex("PermissionId");
 
                     b.ToTable("RolePermissions", (string)null);
-
-                    b.HasData(
-                        new
-                        {
-                            RoleId = new Guid("11111111-1111-1111-1111-111111111111"),
-                            PermissionId = new Guid("aaaa1111-0000-0000-0000-000000000001")
-                        },
-                        new
-                        {
-                            RoleId = new Guid("11111111-1111-1111-1111-111111111111"),
-                            PermissionId = new Guid("aaaa1111-0000-0000-0000-000000000002")
-                        },
-                        new
-                        {
-                            RoleId = new Guid("11111111-1111-1111-1111-111111111111"),
-                            PermissionId = new Guid("aaaa1111-0000-0000-0000-000000000003")
-                        },
-                        new
-                        {
-                            RoleId = new Guid("11111111-1111-1111-1111-111111111111"),
-                            PermissionId = new Guid("aaaa1111-0000-0000-0000-000000000004")
-                        },
-                        new
-                        {
-                            RoleId = new Guid("11111111-1111-1111-1111-111111111111"),
-                            PermissionId = new Guid("aaaa1111-0000-0000-0000-000000000005")
-                        },
-                        new
-                        {
-                            RoleId = new Guid("22222222-2222-2222-2222-222222222222"),
-                            PermissionId = new Guid("aaaa1111-0000-0000-0000-000000000005")
-                        },
-                        new
-                        {
-                            RoleId = new Guid("33333333-3333-3333-3333-333333333333"),
-                            PermissionId = new Guid("aaaa1111-0000-0000-0000-000000000004")
-                        });
                 });
 
             modelBuilder.Entity("Ecommerce.Identity.API.Domain.Aggregates.UserAggregate.User", b =>

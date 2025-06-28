@@ -20,7 +20,7 @@ using Ecommerce.Identity.API.Infrastructure.Configurations;
 
 namespace Ecommerce.Identity.API.Extensions
 {
-    public static class ServiceConfigExtensions
+    public static class ServiceExtensions
     {
         public static void ConfigureIdentityServices(this WebApplicationBuilder builder)
         {

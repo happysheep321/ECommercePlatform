@@ -27,7 +27,7 @@ namespace Ecommerce.Identity.API.Domain.Aggregates.UserAggregate
         public DateTime RegisterTime { get; set; } = DateTime.UtcNow;
 
         // ==== 用户扩展资料 ====
-        public UserProfile Profile { get; private set; } = new UserProfile("新用户_9527", "", DateTime.UtcNow, Gender.Unspecified);
+        public UserProfile Profile { get; private set; }
 
         public void UpdateProfile(UserProfile newProfile)
         {
@@ -137,12 +137,19 @@ namespace Ecommerce.Identity.API.Domain.Aggregates.UserAggregate
         // ==== 构造函数 ====
         protected User() { }
 
-        public User(Guid id, string userName, string passwordHash, string email)
+        public User(Guid id, string userName, string passwordHash, string email, UserType userType)
         {
             Id = id; //聚合根生成的ID
             UserName = userName;
             PasswordHash = passwordHash;
             Email = email;
+            Type = userType;
+            Profile = new UserProfile(
+                nickName: $"新用户_{userName}",
+                avatarUrl: "",
+                birthday: DateTime.UtcNow,
+                gender: Gender.Unspecified
+            );
         }
     }
 }
