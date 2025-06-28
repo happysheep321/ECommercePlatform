@@ -19,10 +19,6 @@ namespace Ecommerce.Identity.API.Application.Validators
                 .NotEmpty().WithMessage("手机号不能为空")
                 .Matches(@"^1[3-9]\d{9}$").WithMessage("手机号格式不正确");
 
-            RuleFor(x => x.PhoneVerifyCode)
-                .NotEmpty().WithMessage("验证码不能为空")
-                .Length(6).WithMessage("验证码长度应为6位");
-
             RuleFor(x => x.Email)
                 .EmailAddress().When(x => !string.IsNullOrWhiteSpace(x.Email)).WithMessage("邮箱格式不正确");
         }

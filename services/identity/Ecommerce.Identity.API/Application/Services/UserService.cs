@@ -17,19 +17,17 @@ namespace Ecommerce.Identity.API.Application.Services
         private readonly IRoleRepository roleRepository;
         private readonly IPasswordHasher passwordHasher;
         private readonly JwtTokenGenerator jwtTokenGenerator;
-        private readonly ISmsCodeService smsCodeService;
         private readonly IRedisHelper redisHelper;
         private readonly IUnitOfWork unitOfWork;
         private readonly IHttpContextAccessor httpContextAccessor;
 
-        public UserService(IUserRepository userRepository, IRoleRepository roleRepository, IPasswordHasher passwordHasher, JwtTokenGenerator jwtTokenGenerator,IRedisHelper redisHelper,IUnitOfWork unitOfWork, IHttpContextAccessor httpContextAccessor,ISmsCodeService smsCodeService)
+        public UserService(IUserRepository userRepository, IRoleRepository roleRepository, IPasswordHasher passwordHasher, JwtTokenGenerator jwtTokenGenerator,IRedisHelper redisHelper,IUnitOfWork unitOfWork, IHttpContextAccessor httpContextAccessor)
         {
             this.userRepository = userRepository;
             this.roleRepository = roleRepository;
             this.passwordHasher = passwordHasher;
             this.jwtTokenGenerator = jwtTokenGenerator;
             this.redisHelper = redisHelper;
-            this.smsCodeService = smsCodeService;
             this.unitOfWork = unitOfWork;
             this.httpContextAccessor = httpContextAccessor;
         }
@@ -38,10 +36,6 @@ namespace Ecommerce.Identity.API.Application.Services
         {
             if (await userRepository.ExistsByPhoneAsync(command.Phone))
                 throw new InvalidOperationException("手机号已注册");
-
-            var isCodeValid = await smsCodeService.VerifyCodeAsync(command.Phone, command.PhoneVerifyCode);
-            if (!isCodeValid)
-                throw new InvalidOperationException("短信验证码无效或已过期");
 
             var user = new User(
                 Guid.NewGuid(),

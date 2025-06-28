@@ -16,10 +16,6 @@ namespace Ecommerce.Identity.API.Domain.Aggregates.UserAggregate
 
         public string? PhoneNumber { get; set; }
 
-        public bool IsPhoneConfirmed { get; set; }
-
-        public bool IsEmailConfirmed { get; set; }
-
         public UserType Type { get; set; } = UserType.Buyer;
 
         public UserStatus Status { get; set; } = UserStatus.Active;

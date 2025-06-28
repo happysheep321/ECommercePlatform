@@ -26,9 +26,6 @@ namespace Ecommerce.Identity.API.Infrastructure.EntityConfigs
             builder.Property(u => u.PhoneNumber)
                 .HasMaxLength(50);
 
-            builder.Property(u => u.IsPhoneConfirmed).IsRequired();
-            builder.Property(u => u.IsEmailConfirmed).IsRequired();
-
             builder.Property(u => u.Type).IsRequired();
             builder.Property(u => u.Status).IsRequired();
 

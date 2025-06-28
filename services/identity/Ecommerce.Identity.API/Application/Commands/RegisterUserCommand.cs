@@ -25,11 +25,6 @@ namespace Ecommerce.Identity.API.Application.Commands
         public string? Email { get; set; }
 
         /// <summary>
-        /// 手机验证码
-        /// </summary>
-        public required string PhoneVerifyCode { get; set; }
-
-        /// <summary>
         /// 用户类型
         /// </summary>
         public UserType UserType { get; set; }

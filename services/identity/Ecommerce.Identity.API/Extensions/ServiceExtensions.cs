@@ -16,7 +16,6 @@ using Ecommerce.Identity.API.Infrastructure.Behaviors;
 using Ecommerce.Identity.API.Application.Validators;
 using ECommerce.BuildingBolcks.Redis;
 using StackExchange.Redis;
-using Ecommerce.Identity.API.Infrastructure.Configurations;
 
 namespace Ecommerce.Identity.API.Extensions
 {
@@ -42,9 +41,6 @@ namespace Ecommerce.Identity.API.Extensions
             services.AddEndpointsApiExplorer();
 
             services.AddSwaggerSecurity();
-
-            services.Configure<TwilioSettings>(config.GetSection("Twilio"));
-            services.AddTransient<ISmsSender, TwilioSmsSender>();
         }
 
         private static void AddInfrastructureServices(this IServiceCollection services)

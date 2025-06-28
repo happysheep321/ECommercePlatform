@@ -12,13 +12,11 @@ namespace ECommerce.Identity.API.Controllers
     public class AuthController:ControllerBase
     {
         private readonly IUserService userService;
-        private readonly ISmsCodeService smsCodeService;
         private readonly ILogger<AuthController> logger;
 
-        public AuthController(IUserService userService,ISmsCodeService smsCodeService, ILogger<AuthController> logger)
+        public AuthController(IUserService userService, ILogger<AuthController> logger)
         {
             this.userService = userService;
-            this.smsCodeService = smsCodeService;
             this.logger = logger;
         }
 
@@ -82,36 +80,6 @@ namespace ECommerce.Identity.API.Controllers
             catch (Exception ex)
             {
                 logger.LogError(ex, "用户登录失败");
-                return StatusCode(StatusCodes.Status500InternalServerError, "服务器内部错误");
-            }
-        }
-
-        /// <summary>
-        /// 发送注册验证码
-        /// </summary>
-        /// <param name="command">包含手机号的命令</param>
-        /// <returns>发送结果</returns>
-        [HttpPost("send-code")]
-        [AllowAnonymous]
-        [ProducesResponseType(typeof(object), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(typeof(string), StatusCodes.Status429TooManyRequests)]
-        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> SendCodeAsync([FromBody] SendSmsCodeCommand command)
-        {
-            try
-            {
-                await smsCodeService.SendRegisterCodeAsync(command.Phone);
-                return Ok(new { Message = "验证码已发送" });
-            }
-            catch (InvalidOperationException ex)
-            {
-                logger.LogWarning(ex, "验证码发送失败");
-                return BadRequest(ex.Message);
-            }
-            catch (Exception ex)
-            {
-                logger.LogError(ex, "发送验证码过程中发生错误");
                 return StatusCode(StatusCodes.Status500InternalServerError, "服务器内部错误");
             }
         }
