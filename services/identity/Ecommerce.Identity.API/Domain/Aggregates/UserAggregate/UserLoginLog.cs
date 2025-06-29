@@ -6,6 +6,8 @@ namespace Ecommerce.Identity.API.Domain.Aggregates.UserAggregate
     {
         public Guid UserId { get; private set; }
 
+        public User User { get; private set; } = default!;
+
         public DateTime LoginTime { get; private set; }
 
         public string IP { get; private set; } = "127.0.0.1";

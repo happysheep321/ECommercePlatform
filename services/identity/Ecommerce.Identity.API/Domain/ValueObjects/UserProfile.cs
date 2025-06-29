@@ -25,14 +25,6 @@ namespace Ecommerce.Identity.API.Domain.ValueObjects
             Gender = gender;
         }
 
-        public void Update(UserProfile userProfile)
-        {
-            NickName=userProfile.NickName;
-            AvatarUrl=userProfile.AvatarUrl;
-            Birthday = userProfile.Birthday;
-            Gender = userProfile.Gender;
-        }
-
         protected override IEnumerable<object> GetEqualityComponents()
         {
             yield return NickName;

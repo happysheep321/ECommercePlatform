@@ -16,15 +16,21 @@ namespace Ecommerce.Identity.API.Infrastructure.Repositories
         public async Task<User?> GetByIdAsync(Guid id)
         {
             return await this.context.Users
-                .Include(u=>u.Addresses)
-                .Include(u=>u.Profile)
-                .Include(u=>u.UserRoles)
-                .FirstOrDefaultAsync(u => u.Id == id);
+                        .Include(u=>u.Addresses)
+                        .Include(u => u.LoginLogs)
+                        .Include(u=>u.UserRoles)
+                            .ThenInclude(ur => ur.Role)
+                        .FirstOrDefaultAsync(u => u.Id == id);
         }
 
         public async Task<User?> GetByUserNameAsync(string userName)
         {
-            return await this.context.Users.FirstOrDefaultAsync(u=>u.UserName == userName);
+            return await this.context.Users
+                        .Include(u => u.Addresses)
+                        .Include(u => u.LoginLogs)
+                        .Include(u => u.UserRoles)
+                            .ThenInclude(ur => ur.Role)
+                        .FirstOrDefaultAsync(u => u.UserName == userName);
         }
 
         public async Task<bool> ExistsByPhoneAsync(string phone)

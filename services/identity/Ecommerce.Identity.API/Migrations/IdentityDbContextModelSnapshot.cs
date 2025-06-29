@@ -346,13 +346,12 @@ namespace Ecommerce.Identity.API.Migrations
                                 .HasForeignKey("UserId");
                         });
 
-                    b.Navigation("Profile")
-                        .IsRequired();
+                    b.Navigation("Profile");
                 });
 
             modelBuilder.Entity("Ecommerce.Identity.API.Domain.Aggregates.UserAggregate.UserAddress", b =>
                 {
-                    b.HasOne("Ecommerce.Identity.API.Domain.Aggregates.UserAggregate.User", null)
+                    b.HasOne("Ecommerce.Identity.API.Domain.Aggregates.UserAggregate.User", "User")
                         .WithMany("Addresses")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -386,13 +385,14 @@ namespace Ecommerce.Identity.API.Migrations
                                 .HasForeignKey("UserAddressId");
                         });
 
-                    b.Navigation("Region")
-                        .IsRequired();
+                    b.Navigation("Region");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("Ecommerce.Identity.API.Domain.Aggregates.UserAggregate.UserLoginLog", b =>
                 {
-                    b.HasOne("Ecommerce.Identity.API.Domain.Aggregates.UserAggregate.User", null)
+                    b.HasOne("Ecommerce.Identity.API.Domain.Aggregates.UserAggregate.User", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -401,6 +401,8 @@ namespace Ecommerce.Identity.API.Migrations
                     b.HasOne("Ecommerce.Identity.API.Domain.Aggregates.UserAggregate.User", null)
                         .WithMany("LoginLogs")
                         .HasForeignKey("UserId1");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("Ecommerce.Identity.API.Domain.Aggregates.UserAggregate.UserRole", b =>

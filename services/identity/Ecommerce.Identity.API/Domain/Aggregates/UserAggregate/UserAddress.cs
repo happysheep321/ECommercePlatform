@@ -7,9 +7,14 @@ namespace Ecommerce.Identity.API.Domain.Aggregates.UserAggregate
     {
         public Guid UserId { get; private set; }
 
+        public User User { get; private set; } = default!;
+
         public string ReceiverName { get; private set; } = string.Empty;
+
         public string Phone { get; private set; } = string.Empty;
-        public Region Region { get; private set; }
+
+        public Region? Region { get; private set; }
+
         public string Detail { get; private set; } = string.Empty;
 
         public bool IsDefault { get; private set; }

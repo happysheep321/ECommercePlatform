@@ -8,9 +8,9 @@ namespace Ecommerce.Identity.API.Domain.Aggregates.UserAggregate
 {
     public class User : Entity<Guid>, IAggregateRoot
     {
-        public string UserName { get; set; }
+        public string? UserName { get; set; }
 
-        public string PasswordHash { get; set; }
+        public string? PasswordHash { get; set; }
 
         public string? Email { get; set; }
 
@@ -23,7 +23,7 @@ namespace Ecommerce.Identity.API.Domain.Aggregates.UserAggregate
         public DateTime RegisterTime { get; set; } = DateTime.UtcNow;
 
         // ==== 用户扩展资料 ====
-        public UserProfile Profile { get; private set; }
+        public UserProfile? Profile { get; private set; }
 
         public void UpdateProfile(UserProfile newProfile)
         {
@@ -90,7 +90,7 @@ namespace Ecommerce.Identity.API.Domain.Aggregates.UserAggregate
             existAddress.UpdateAddress(
                 updateAddress.ReceiverName,
                 updateAddress.Phone,
-                updateAddress.Region,
+                updateAddress.Region!,
                 updateAddress.Detail,
                 updateAddress.IsDefault);
 
@@ -133,12 +133,13 @@ namespace Ecommerce.Identity.API.Domain.Aggregates.UserAggregate
         // ==== 构造函数 ====
         protected User() { }
 
-        public User(Guid id, string userName, string passwordHash, string email, UserType userType)
+        public User(Guid id, string userName, string passwordHash, string email,string phone, UserType userType)
         {
             Id = id; //聚合根生成的ID
             UserName = userName;
             PasswordHash = passwordHash;
             Email = email;
+            PhoneNumber = phone;
             Type = userType;
             Profile = new UserProfile(
                 nickName: $"新用户_{userName}",

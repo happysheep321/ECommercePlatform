@@ -6,7 +6,7 @@ namespace Ecommerce.Identity.API.Domain.Aggregates.RoleAggregate
 {
     public class Role:Entity<Guid>,IAggregateRoot
     {
-        public string Name { get; set; }
+        public string? Name { get; set; }
 
         public string? Description { get; set; }
 

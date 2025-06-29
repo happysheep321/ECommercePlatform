@@ -50,10 +50,11 @@ namespace Ecommerce.Identity.API.Infrastructure.EntityConfigs
                     .HasColumnName("Profile_Gender");
             });
 
-            // 配置RoleIds为私有字段集合映射
+            // 配置用户角色为导航属性
             builder.Metadata
                 .FindNavigation(nameof(User.UserRoles))?
                 .SetPropertyAccessMode(PropertyAccessMode.Field);
+
             builder.HasMany(u => u.UserRoles)
                .WithOne(ur => ur.User)
                .HasForeignKey(ur => ur.UserId)
@@ -61,14 +62,22 @@ namespace Ecommerce.Identity.API.Infrastructure.EntityConfigs
 
 
             // 配置地址为导航属性
+            builder.Metadata
+                .FindNavigation(nameof(User.Addresses))?
+                .SetPropertyAccessMode(PropertyAccessMode.Field);
+
             builder.HasMany(u => u.Addresses)
-                .WithOne()
+                .WithOne(l => l.User) //反向导航属性
                 .HasForeignKey(a => a.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
 
             // 配置登录日志关联（如果有导航）
+            builder.Metadata
+                .FindNavigation(nameof(User.LoginLogs))?
+                .SetPropertyAccessMode(PropertyAccessMode.Field);
+
             builder.HasMany<UserLoginLog>()
-                .WithOne()
+                .WithOne(l => l.User) //反向导航属性
                 .HasForeignKey(l => l.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
         }

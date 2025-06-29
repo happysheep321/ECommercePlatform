@@ -14,6 +14,7 @@ namespace Ecommerce.Identity.API.Application.Services
     public class UserService:IUserService
     {
         private readonly IUserRepository userRepository;
+        private readonly IUserLoginLogRepository userLoginLogRepository;
         private readonly IRoleRepository roleRepository;
         private readonly IPasswordHasher passwordHasher;
         private readonly JwtTokenGenerator jwtTokenGenerator;
@@ -21,9 +22,10 @@ namespace Ecommerce.Identity.API.Application.Services
         private readonly IUnitOfWork unitOfWork;
         private readonly IHttpContextAccessor httpContextAccessor;
 
-        public UserService(IUserRepository userRepository, IRoleRepository roleRepository, IPasswordHasher passwordHasher, JwtTokenGenerator jwtTokenGenerator,IRedisHelper redisHelper,IUnitOfWork unitOfWork, IHttpContextAccessor httpContextAccessor)
+        public UserService(IUserRepository userRepository,IUserLoginLogRepository userLoginLogRepository , IRoleRepository roleRepository, IPasswordHasher passwordHasher, JwtTokenGenerator jwtTokenGenerator,IRedisHelper redisHelper,IUnitOfWork unitOfWork, IHttpContextAccessor httpContextAccessor)
         {
             this.userRepository = userRepository;
+            this.userLoginLogRepository = userLoginLogRepository;
             this.roleRepository = roleRepository;
             this.passwordHasher = passwordHasher;
             this.jwtTokenGenerator = jwtTokenGenerator;
@@ -42,6 +44,7 @@ namespace Ecommerce.Identity.API.Application.Services
                 command.UserName,
                 passwordHasher.HashPassword(command.Password),
                 command.Email!,
+                command.Phone,
                 command.UserType
             );
 
@@ -66,26 +69,25 @@ namespace Ecommerce.Identity.API.Application.Services
         public async Task<LoginResultDto> LoginAsync(LoginUserCommand command)
         {
             var user = await userRepository.GetByUserNameAsync(command.UserName);
-            if (user == null || !passwordHasher.VerifyPassword(user.PasswordHash, command.Password))
+            if (user == null || !passwordHasher.VerifyPassword(user.PasswordHash!, command.Password))
             {
                 throw new UnauthorizedAccessException("用户名或密码错误");
             }
 
-            var token = jwtTokenGenerator.GenerateToken(user.Id, user.UserName, user.Type, user.Email!, user.PhoneNumber!);
+            var token = jwtTokenGenerator.GenerateToken(user.Id, user.UserName!, user.Type, user.Email!, user.PhoneNumber!);
             var ip = httpContextAccessor.HttpContext?.Connection.RemoteIpAddress?.ToString() ?? "unknown";
             var device = httpContextAccessor.HttpContext?.Request.Headers["User-Agent"].ToString() ?? "unknown";
 
-            user.AddLoginLog(new UserLoginLog(user.Id, ip, device, "未知地区"));
-
-            userRepository.Update(user);
+            var loginLog = new UserLoginLog(user.Id, ip, device, "未知地区");
+            await userLoginLogRepository.AddAsync(loginLog);
             await unitOfWork.SaveChangesAsync();
 
             return new LoginResultDto
             {
                 Token=token.Token,
                 Expiration= token.Expiration,
-                UserName = user.UserName,
-                AvatarUrl=user.Profile.AvatarUrl
+                UserName = user.UserName!,
+                AvatarUrl=user.Profile!.AvatarUrl
             };
         }
 
@@ -99,23 +101,23 @@ namespace Ecommerce.Identity.API.Application.Services
             return new UserProfileDto
             {
                 UserId = userId,
-                UserName = user.UserName,
+                UserName = user.UserName!,
                 Email = user.Email,
                 Phone = user.PhoneNumber!,
-                AvatarUrl = user.Profile.AvatarUrl,
+                AvatarUrl = user.Profile!.AvatarUrl,
                 Addresses = user.Addresses.Select(addr => new UserAddressDto
                 {
                     AddressId = addr.Id,
                     ReceiverName = addr.ReceiverName,
                     Phone = addr.Phone,
-                    Region = addr.Region,
+                    Region = addr.Region!,
                     Detail = addr.Detail,
                     IsDefault = addr.IsDefault,
                 }).ToList(),
                 Roles = user.UserRoles.Select(ur => new RoleDto
                 {
                     RoleId = ur.RoleId,
-                    Name = ur.Role.Name,
+                    Name = ur.Role.Name!,
                     Description = ur.Role.Description,
                 }).ToList(),
             };
@@ -138,14 +140,14 @@ namespace Ecommerce.Identity.API.Application.Services
 
             var currentProfile = user.Profile;
 
-            string updatedNickName = string.IsNullOrWhiteSpace(command.NickName) ? currentProfile.NickName : command.NickName.Trim();
-            string updatedAvatarUrl = string.IsNullOrWhiteSpace(command.AvatarUrl) ? currentProfile.AvatarUrl : command.AvatarUrl;
-            Gender updatedGender = command.Gender.HasValue ? (Gender)command.Gender.Value : currentProfile.Gender;
+            string updatedNickName = string.IsNullOrWhiteSpace(command.NickName) ? currentProfile!.NickName : command.NickName.Trim();
+            string updatedAvatarUrl = string.IsNullOrWhiteSpace(command.AvatarUrl) ? currentProfile!.AvatarUrl : command.AvatarUrl;
+            Gender updatedGender = command.Gender.HasValue ? (Gender)command.Gender.Value : currentProfile!.Gender;
 
             var updateProfile = new UserProfile(
                 updatedNickName,
                 updatedAvatarUrl,
-                currentProfile.Birthday,
+                currentProfile!.Birthday,
                 updatedGender
                 );
 
@@ -163,10 +165,10 @@ namespace Ecommerce.Identity.API.Application.Services
             var newAddress = new UserAddress(
                 Guid.NewGuid(),
                 userId,
-                command.ReceiverName,
-                command.Phone,
-                command.Region,
-                command.Detail,
+                command.ReceiverName!,
+                command.Phone!,
+                command.Region!,
+                command.Detail!,
                 command.IsDefault
             );
 
@@ -184,10 +186,10 @@ namespace Ecommerce.Identity.API.Application.Services
             var updatedAddress = new UserAddress(
                 command.AddressId,
                 userId,
-                command.ReceiverName,
-                command.Phone,
-                command.Region,
-                command.Detail,
+                command.ReceiverName!,
+                command.Phone!,
+                command.Region!,
+                command.Detail!,
                 command.IsDefault
             );
 
@@ -245,8 +247,7 @@ namespace Ecommerce.Identity.API.Application.Services
                 throw new UnauthorizedAccessException("用户不存在");
 
             var loginLog = new UserLoginLog(userId, ip, device, location);
-            user.AddLoginLog(loginLog);
-            userRepository.Update(user);
+            await userLoginLogRepository.AddAsync(loginLog);
             await unitOfWork.SaveChangesAsync();
         }
     }

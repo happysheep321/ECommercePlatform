@@ -15,12 +15,16 @@ namespace Ecommerce.Identity.API.Infrastructure.Repositories
 
         public async Task<Role?> GetByIdAsync(Guid id)
         {
-            return await this.context.Roles.FirstOrDefaultAsync(r => r.Id == id);
+            return await this.context.Roles
+                .Include(r => r.RolePermissions)
+                .FirstOrDefaultAsync(r => r.Id == id);
         }
 
         public async Task<Role?> GetByNameAsync(string name)
         {
-            return await this.context.Roles.FirstOrDefaultAsync(r => r.Name == name);
+            return await this.context.Roles
+                .Include(r => r.RolePermissions)
+                .FirstOrDefaultAsync(r => r.Name == name);
         }
 
         public async Task AddAsync(Role role)
