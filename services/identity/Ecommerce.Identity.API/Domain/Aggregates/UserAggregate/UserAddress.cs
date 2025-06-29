@@ -35,13 +35,12 @@ namespace Ecommerce.Identity.API.Domain.Aggregates.UserAggregate
             IsDefault = isDefault;
         }
 
-        public void UpdateAddress(string receiverName, string phone, Region region, string detail, bool isDefault)
+        public void UpdateAddress(string receiverName, string phone, Region region, string detail)
         {
             ReceiverName = receiverName;
             Phone = phone;
             Region = region;
             Detail = detail;
-            IsDefault = isDefault;
         }
 
         public void SetDefault(bool isDefault)

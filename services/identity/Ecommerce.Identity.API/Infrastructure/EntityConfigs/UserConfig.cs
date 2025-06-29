@@ -26,7 +26,7 @@ namespace Ecommerce.Identity.API.Infrastructure.EntityConfigs
             builder.Property(u => u.PhoneNumber)
                 .HasMaxLength(50);
 
-            builder.Property(u => u.Type).IsRequired();
+            builder.Property(u => u.Type).HasConversion<int>().IsRequired();
             builder.Property(u => u.Status).IsRequired();
 
             builder.Property(u => u.RegisterTime).IsRequired();
@@ -58,7 +58,8 @@ namespace Ecommerce.Identity.API.Infrastructure.EntityConfigs
             builder.HasMany(u => u.UserRoles)
                .WithOne(ur => ur.User)
                .HasForeignKey(ur => ur.UserId)
-               .IsRequired();
+               .IsRequired()
+               .OnDelete(DeleteBehavior.Cascade);
 
 
             // 配置地址为导航属性
@@ -76,7 +77,7 @@ namespace Ecommerce.Identity.API.Infrastructure.EntityConfigs
                 .FindNavigation(nameof(User.LoginLogs))?
                 .SetPropertyAccessMode(PropertyAccessMode.Field);
 
-            builder.HasMany<UserLoginLog>()
+            builder.HasMany(u => u.LoginLogs)
                 .WithOne(l => l.User) //反向导航属性
                 .HasForeignKey(l => l.UserId)
                 .OnDelete(DeleteBehavior.Cascade);

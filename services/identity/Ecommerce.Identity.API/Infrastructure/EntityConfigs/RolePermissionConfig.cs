@@ -17,7 +17,7 @@ namespace Ecommerce.Identity.API.Infrastructure.EntityConfigs
                 .HasForeignKey(rp => rp.RoleId);
 
             builder.HasOne(rp => rp.Permission)
-                .WithMany()
+                .WithMany() //后续开发为双向导航属性
                 .HasForeignKey(rp => rp.PermissionId);
         }
     }

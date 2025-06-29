@@ -64,6 +64,11 @@ namespace Ecommerce.Identity.API.Domain.Aggregates.UserAggregate
 
         public void AddAddress(UserAddress addAddress)
         {
+            if (addresses.Any(a => a.ReceiverName == addAddress.ReceiverName && a.Detail == addAddress.Detail))
+            {
+                throw new InvalidOperationException("不能添加重复的地址");
+            }
+
             if (!addresses.Any())
             {
                 addAddress.SetDefault(true);
@@ -91,8 +96,7 @@ namespace Ecommerce.Identity.API.Domain.Aggregates.UserAggregate
                 updateAddress.ReceiverName,
                 updateAddress.Phone,
                 updateAddress.Region!,
-                updateAddress.Detail,
-                updateAddress.IsDefault);
+                updateAddress.Detail);
 
             if (updateAddress.IsDefault)
             {
@@ -135,6 +139,11 @@ namespace Ecommerce.Identity.API.Domain.Aggregates.UserAggregate
 
         public User(Guid id, string userName, string passwordHash, string email,string phone, UserType userType)
         {
+            if (string.IsNullOrWhiteSpace(userName)) 
+                throw new ArgumentException("用户名不能为空", nameof(userName));
+            if (string.IsNullOrWhiteSpace(passwordHash)) 
+                throw new ArgumentException("密码不能为空", nameof(passwordHash));
+
             Id = id; //聚合根生成的ID
             UserName = userName;
             PasswordHash = passwordHash;

@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Ecommerce.Identity.API.Migrations
 {
     [DbContext(typeof(IdentityDbContext))]
-    [Migration("20250629024149_Identity_Service_Reversion_01")]
-    partial class Identity_Service_Reversion_01
+    [Migration("20250629032813_FixUserLoginLogForeignKey")]
+    partial class FixUserLoginLogForeignKey
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -255,7 +255,6 @@ namespace Ecommerce.Identity.API.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("IP")
-                        .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
@@ -268,14 +267,9 @@ namespace Ecommerce.Identity.API.Migrations
                     b.Property<Guid>("UserId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid?>("UserId1")
-                        .HasColumnType("uniqueidentifier");
-
                     b.HasKey("Id");
 
                     b.HasIndex("UserId");
-
-                    b.HasIndex("UserId1");
 
                     b.ToTable("UserLoginLogs", (string)null);
                 });
@@ -396,14 +390,10 @@ namespace Ecommerce.Identity.API.Migrations
             modelBuilder.Entity("Ecommerce.Identity.API.Domain.Aggregates.UserAggregate.UserLoginLog", b =>
                 {
                     b.HasOne("Ecommerce.Identity.API.Domain.Aggregates.UserAggregate.User", "User")
-                        .WithMany()
+                        .WithMany("LoginLogs")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.HasOne("Ecommerce.Identity.API.Domain.Aggregates.UserAggregate.User", null)
-                        .WithMany("LoginLogs")
-                        .HasForeignKey("UserId1");
 
                     b.Navigation("User");
                 });

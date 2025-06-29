@@ -10,7 +10,7 @@ namespace Ecommerce.Identity.API.Domain.Aggregates.UserAggregate
 
         public DateTime LoginTime { get; private set; }
 
-        public string IP { get; private set; } = "127.0.0.1";
+        public string? IP { get; private set; }
 
         public string? Device { get; private set; }
 
