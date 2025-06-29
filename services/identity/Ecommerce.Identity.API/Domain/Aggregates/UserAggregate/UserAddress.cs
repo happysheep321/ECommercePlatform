@@ -13,7 +13,7 @@ namespace Ecommerce.Identity.API.Domain.Aggregates.UserAggregate
 
         public string Phone { get; private set; } = string.Empty;
 
-        public Region? Region { get; private set; }
+        public Region Region { get; private set; } = default!;
 
         public string Detail { get; private set; } = string.Empty;
 

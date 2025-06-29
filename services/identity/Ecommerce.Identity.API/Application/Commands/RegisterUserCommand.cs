@@ -22,7 +22,7 @@ namespace Ecommerce.Identity.API.Application.Commands
         /// <summary>
         /// 电子邮箱（可选）
         /// </summary>
-        public string? Email { get; set; }
+        public string Email { get; set; } = default!;
 
         /// <summary>
         /// 用户类型

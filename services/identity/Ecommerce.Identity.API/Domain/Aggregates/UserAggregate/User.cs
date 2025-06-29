@@ -8,22 +8,22 @@ namespace Ecommerce.Identity.API.Domain.Aggregates.UserAggregate
 {
     public class User : Entity<Guid>, IAggregateRoot
     {
-        public string? UserName { get; set; }
+        public string UserName { get; set; } = default!;
 
-        public string? PasswordHash { get; set; }
+        public string PasswordHash { get; set; } = default!;
 
-        public string? Email { get; set; }
+        public string Email { get; set; } = default!;
 
-        public string? PhoneNumber { get; set; }
+        public string PhoneNumber { get; set; } = default!;
 
-        public UserType Type { get; set; } = UserType.Buyer;
+        public UserType Type { get; set; } = UserType.Normal;
 
         public UserStatus Status { get; set; } = UserStatus.Active;
 
         public DateTime RegisterTime { get; set; } = DateTime.UtcNow;
 
         // ==== 用户扩展资料 ====
-        public UserProfile? Profile { get; private set; }
+        public UserProfile Profile { get; private set; } = default!;
 
         public void UpdateProfile(UserProfile newProfile)
         {

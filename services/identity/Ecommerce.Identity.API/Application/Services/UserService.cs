@@ -43,16 +43,16 @@ namespace Ecommerce.Identity.API.Application.Services
                 Guid.NewGuid(),
                 command.UserName,
                 passwordHasher.HashPassword(command.Password),
-                command.Email!,
+                command.Email,
                 command.Phone,
                 command.UserType
             );
 
             string defaultRole = command.UserType switch
             {
-                UserType.Buyer=> "Buyer",
+                UserType.Normal => "Buyer",
                 UserType.Seller => "Seller",
-                UserType.Admin =>"Admin",
+                UserType.Admin => "Admin",
                 _ => throw new InvalidOperationException("未知的用户类型")
             };
 
@@ -86,8 +86,8 @@ namespace Ecommerce.Identity.API.Application.Services
             {
                 Token=token.Token,
                 Expiration= token.Expiration,
-                UserName = user.UserName!,
-                AvatarUrl=user.Profile!.AvatarUrl
+                UserName = user.UserName,
+                AvatarUrl=user.Profile.AvatarUrl
             };
         }
 
@@ -104,7 +104,10 @@ namespace Ecommerce.Identity.API.Application.Services
                 UserName = user.UserName!,
                 Email = user.Email,
                 Phone = user.PhoneNumber!,
-                AvatarUrl = user.Profile!.AvatarUrl,
+                NickName = user.Profile.NickName,
+                AvatarUrl = user.Profile.AvatarUrl,
+                Birthday = user.Profile.Birthday,
+                Gender = user.Profile.Gender,
                 Addresses = user.Addresses.Select(addr => new UserAddressDto
                 {
                     AddressId = addr.Id,
@@ -142,12 +145,12 @@ namespace Ecommerce.Identity.API.Application.Services
 
             string updatedNickName = string.IsNullOrWhiteSpace(command.NickName) ? currentProfile!.NickName : command.NickName.Trim();
             string updatedAvatarUrl = string.IsNullOrWhiteSpace(command.AvatarUrl) ? currentProfile!.AvatarUrl : command.AvatarUrl;
-            Gender updatedGender = command.Gender.HasValue ? (Gender)command.Gender.Value : currentProfile!.Gender;
+            Gender updatedGender = (Gender)command.Gender;
 
             var updateProfile = new UserProfile(
                 updatedNickName,
                 updatedAvatarUrl,
-                currentProfile!.Birthday,
+                currentProfile.Birthday,
                 updatedGender
                 );
 
@@ -165,10 +168,10 @@ namespace Ecommerce.Identity.API.Application.Services
             var newAddress = new UserAddress(
                 Guid.NewGuid(),
                 userId,
-                command.ReceiverName!,
-                command.Phone!,
-                command.Region!,
-                command.Detail!,
+                command.ReceiverName,
+                command.Phone,
+                command.Region,
+                command.Detail,
                 command.IsDefault
             );
 
@@ -186,10 +189,10 @@ namespace Ecommerce.Identity.API.Application.Services
             var updatedAddress = new UserAddress(
                 command.AddressId,
                 userId,
-                command.ReceiverName!,
-                command.Phone!,
-                command.Region!,
-                command.Detail!,
+                command.ReceiverName,
+                command.Phone,
+                command.Region,
+                command.Detail,
                 command.IsDefault
             );
 

@@ -29,7 +29,6 @@ namespace Ecommerce.Identity.API.Application.Validators
 
             RuleFor(x => x.Gender)
                 .InclusiveBetween(0, 2)
-                .When(x => x.Gender.HasValue)
                 .WithMessage("性别只能是 0（男）、1（女）或 2（未知）");
         }
 
