@@ -7,9 +7,6 @@ namespace Ecommerce.Identity.API.Application.Validators
     {
         public AddUserAddressCommandValidator()
         {
-            RuleFor(x => x.UserId)
-                .NotEmpty().WithMessage("用户ID不能为空");
-
             RuleFor(x => x.ReceiverName)
                 .NotEmpty().WithMessage("收件人姓名不能为空");
 

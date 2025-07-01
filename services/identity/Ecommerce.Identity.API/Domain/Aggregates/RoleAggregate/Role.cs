@@ -6,13 +6,19 @@ namespace Ecommerce.Identity.API.Domain.Aggregates.RoleAggregate
 {
     public class Role:Entity<Guid>,IAggregateRoot
     {
+        /// <summary>
+        /// 角色名称
+        /// </summary>
         public string Name { get; set; } = default!;
 
+        /// <summary>
+        /// 角色描述
+        /// </summary>
         public string Description { get; set; } = default!;
 
         private readonly List<RolePermission> rolePermissions = new();
 
-        public IReadOnlyCollection<RolePermission> RolePermissions=> rolePermissions.AsReadOnly();
+        public IReadOnlyCollection<RolePermission> RolePermissions => rolePermissions.AsReadOnly();
 
         /// <summary>
         /// EF Core无参构造函数

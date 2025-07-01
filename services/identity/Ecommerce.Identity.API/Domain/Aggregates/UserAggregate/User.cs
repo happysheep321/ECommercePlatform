@@ -8,18 +8,39 @@ namespace Ecommerce.Identity.API.Domain.Aggregates.UserAggregate
 {
     public class User : Entity<Guid>, IAggregateRoot
     {
+        /// <summary>
+        /// 用户名
+        /// </summary>
         public string UserName { get; set; } = default!;
 
+        /// <summary>
+        /// 密码哈希
+        /// </summary>
         public string PasswordHash { get; set; } = default!;
 
+        /// <summary>
+        /// 邮箱
+        /// </summary>
         public string Email { get; set; } = default!;
 
+        /// <summary>
+        /// 手机号
+        /// </summary>
         public string PhoneNumber { get; set; } = default!;
 
+        /// <summary>
+        /// 用户类型
+        /// </summary>
         public UserType Type { get; set; } = UserType.Normal;
 
+        /// <summary>
+        /// 用户状态
+        /// </summary>
         public UserStatus Status { get; set; } = UserStatus.Active;
 
+        /// <summary>
+        /// 注册时间（UTC）
+        /// </summary>
         public DateTime RegisterTime { get; set; } = DateTime.UtcNow;
 
         // ==== 用户扩展资料 ====

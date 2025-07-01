@@ -14,6 +14,7 @@ namespace Ecommerce.Identity.API.Application.Services
     public class UserService:IUserService
     {
         private readonly IUserRepository userRepository;
+        private readonly IUserAddressRepository userAddressRepository;
         private readonly IUserLoginLogRepository userLoginLogRepository;
         private readonly IRoleRepository roleRepository;
         private readonly IPasswordHasher passwordHasher;
@@ -22,9 +23,10 @@ namespace Ecommerce.Identity.API.Application.Services
         private readonly IUnitOfWork unitOfWork;
         private readonly IHttpContextAccessor httpContextAccessor;
 
-        public UserService(IUserRepository userRepository,IUserLoginLogRepository userLoginLogRepository , IRoleRepository roleRepository, IPasswordHasher passwordHasher, JwtTokenGenerator jwtTokenGenerator,IRedisHelper redisHelper,IUnitOfWork unitOfWork, IHttpContextAccessor httpContextAccessor)
+        public UserService(IUserRepository userRepository,IUserAddressRepository userAddressRepository , IUserLoginLogRepository userLoginLogRepository , IRoleRepository roleRepository, IPasswordHasher passwordHasher, JwtTokenGenerator jwtTokenGenerator,IRedisHelper redisHelper,IUnitOfWork unitOfWork, IHttpContextAccessor httpContextAccessor)
         {
             this.userRepository = userRepository;
+            this.userAddressRepository = userAddressRepository;
             this.userLoginLogRepository = userLoginLogRepository;
             this.roleRepository = roleRepository;
             this.passwordHasher = passwordHasher;
@@ -176,7 +178,7 @@ namespace Ecommerce.Identity.API.Application.Services
             );
 
             user.AddAddress(newAddress);
-            userRepository.Update(user);
+            await userAddressRepository.AddAsync(newAddress);
             await unitOfWork.SaveChangesAsync();
         }
 
@@ -186,8 +188,14 @@ namespace Ecommerce.Identity.API.Application.Services
             if (user == null)
                 throw new UnauthorizedAccessException("用户不存在");
 
+            // 先从仓储查找原地址
+            var existAddress = await userAddressRepository.GetByIdAsync(command.AddressId);
+            if (existAddress == null || existAddress.UserId != userId)
+                throw new InvalidOperationException("地址不存在或不属于该用户");
+
+            // 利用聚合根方法更新地址
             var updatedAddress = new UserAddress(
-                command.AddressId,
+                existAddress.Id,
                 userId,
                 command.ReceiverName,
                 command.Phone,
@@ -197,7 +205,6 @@ namespace Ecommerce.Identity.API.Application.Services
             );
 
             user.UpdateAddress(updatedAddress);
-            userRepository.Update(user);
             await unitOfWork.SaveChangesAsync();
         }
 

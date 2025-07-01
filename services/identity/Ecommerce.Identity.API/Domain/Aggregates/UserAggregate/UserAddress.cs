@@ -5,18 +5,36 @@ namespace Ecommerce.Identity.API.Domain.Aggregates.UserAggregate
 {
     public class UserAddress : Entity<Guid>
     {
+        /// <summary>
+        /// 用户Id
+        /// </summary>
         public Guid UserId { get; private set; }
 
         public User User { get; private set; } = default!;
 
+        /// <summary>
+        /// 收件人姓名
+        /// </summary>
         public string ReceiverName { get; private set; } = string.Empty;
 
+        /// <summary>
+        /// 收件人手机号
+        /// </summary>
         public string Phone { get; private set; } = string.Empty;
 
+        /// <summary>
+        /// 区域
+        /// </summary>
         public Region Region { get; private set; } = default!;
 
+        /// <summary>
+        /// 详细地址
+        /// </summary>
         public string Detail { get; private set; } = string.Empty;
 
+        /// <summary>
+        /// 是否为默认地址
+        /// </summary>
         public bool IsDefault { get; private set; }
 
         protected UserAddress()

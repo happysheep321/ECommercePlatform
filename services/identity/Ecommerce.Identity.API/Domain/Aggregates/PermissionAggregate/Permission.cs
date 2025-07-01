@@ -5,7 +5,14 @@ namespace Ecommerce.Identity.API.Domain.Aggregates.PermissionAggregate
 {
     public class Permission : Entity<Guid>, IAggregateRoot
     {
-        public string? Name { get; set; } // "ViewProduct", "EditUser"
+        /// <summary>
+        /// 权限名称，例如 "ViewProduct"、"EditUser"
+        /// </summary>
+        public string? Name { get; set; }
+
+        /// <summary>
+        /// 权限描述
+        /// </summary>
         public string? Description { get; set; }
 
         public Permission() { }
