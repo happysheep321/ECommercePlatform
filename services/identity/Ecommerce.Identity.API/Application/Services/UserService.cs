@@ -219,7 +219,7 @@ namespace Ecommerce.Identity.API.Application.Services
                 throw new InvalidOperationException("地址不存在");
 
             user.RemoveAddress(addressToRemove);
-            userRepository.Update(user);
+            userAddressRepository.Remove(addressToRemove);
             await unitOfWork.SaveChangesAsync();
         }
 
