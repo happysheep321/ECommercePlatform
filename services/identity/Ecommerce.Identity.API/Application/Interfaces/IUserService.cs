@@ -25,8 +25,5 @@ namespace Ecommerce.Identity.API.Application.Interfaces
         //// 通知订阅
         //Task SubscribeAsync(Guid userId);
         //Task UnsubscribeAsync(Guid userId);
-
-        // 审计日志
-        Task AddLoginLogAsync(Guid userId, string ip, string device, string location);
     }
 }

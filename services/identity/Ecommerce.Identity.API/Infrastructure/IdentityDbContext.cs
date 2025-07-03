@@ -32,10 +32,10 @@ namespace Ecommerce.Identity.API.Infrastructure
 
             // 角色基础数据
             modelBuilder.Entity<Role>().HasData(
-                new Role(Guid.Parse("11111111-1111-1111-1111-111111111111"), "Admin", "管理员"),
-                new Role(Guid.Parse("22222222-2222-2222-2222-222222222222"), "Seller", "卖家"),
-                new Role(Guid.Parse("33333333-3333-3333-3333-333333333333"), "Buyer", "买家"),
-                new Role(Guid.Parse("44444444-4444-4444-4444-444444444444"), "Guest", "访客")
+                new Role(Guid.Parse("11111111-1111-1111-1111-111111111111"), "Admin", "管理员", true),
+                new Role(Guid.Parse("22222222-2222-2222-2222-222222222222"), "Seller", "卖家", true),
+                new Role(Guid.Parse("33333333-3333-3333-3333-333333333333"), "Buyer", "买家", true),
+                new Role(Guid.Parse("44444444-4444-4444-4444-444444444444"), "Guest", "访客", true)
             );
 
             modelBuilder.Entity<Permission>().HasData(

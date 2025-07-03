@@ -16,6 +16,11 @@ namespace Ecommerce.Identity.API.Domain.Aggregates.RoleAggregate
         /// </summary>
         public string Description { get; set; } = default!;
 
+        /// <summary>
+        /// 是否为系统内置角色
+        /// </summary>
+        public bool IsSystemRole { get; private set; } = false;
+
         private readonly List<RolePermission> rolePermissions = new();
 
         public IReadOnlyCollection<RolePermission> RolePermissions => rolePermissions.AsReadOnly();
@@ -30,11 +35,12 @@ namespace Ecommerce.Identity.API.Domain.Aggregates.RoleAggregate
         /// </summary>
         /// <param name="name">角色名</param>
         /// <param name="description">角色描述</param>
-        public Role(Guid id, string name, string description)
+        public Role(Guid id, string name, string description, bool isSystemRole = false)
         {
             Id = id; // 聚合根生成的ID
             Name = name;
             Description = description;
+            IsSystemRole = isSystemRole;
         }
 
         public void AddPermission(Permission permission)

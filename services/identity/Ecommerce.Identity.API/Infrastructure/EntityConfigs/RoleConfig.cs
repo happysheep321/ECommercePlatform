@@ -22,6 +22,10 @@ namespace Ecommerce.Identity.API.Infrastructure.EntityConfigs
             builder.Property(r => r.Description)
                 .HasMaxLength(200);
 
+            builder.Property(r => r.IsSystemRole)
+                .IsRequired()
+                .HasDefaultValue(false);
+
             builder.Metadata
                 .FindNavigation(nameof(Role.RolePermissions))?
                 .SetPropertyAccessMode(PropertyAccessMode.Field);

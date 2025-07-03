@@ -61,10 +61,11 @@ namespace Ecommerce.Identity.API.Application.Services
             var role = await roleRepository.GetByNameAsync(defaultRole);
             if (role != null)
                 user.AddRole(role);
+            else
+                throw new InvalidOperationException($"默认角色 {defaultRole} 不存在，请检查系统角色初始化");
 
             await userRepository.AddAsync(user);
             await unitOfWork.SaveChangesAsync();
-            await redisHelper.DeleteAsync($"verify:code:register:{command.Phone}");
             return user.Id;
         }
 
@@ -245,19 +246,19 @@ namespace Ecommerce.Identity.API.Application.Services
             if (user == null)
                 throw new UnauthorizedAccessException("用户不存在");
 
+            var role = await roleRepository.GetByIdAsync(roleId);
+            if (role == null)
+                throw new InvalidOperationException("角色不存在");
+
+            // 系统角色不允许被移除
+            if (role.IsSystemRole)
+                throw new InvalidOperationException($"系统内置角色 [{role.Name}] 不能被移除");
+
+            if (user.UserRoles.Count == 1)
+                throw new InvalidOperationException("用户不能没有角色");
+
             user.RemoveRole(roleId);
             userRepository.Update(user);
-            await unitOfWork.SaveChangesAsync();
-        }
-
-        public async Task AddLoginLogAsync(Guid userId, string ip, string device, string location)
-        {
-            var user = await userRepository.GetByIdAsync(userId);
-            if (user == null)
-                throw new UnauthorizedAccessException("用户不存在");
-
-            var loginLog = new UserLoginLog(userId, ip, device, location);
-            await userLoginLogRepository.AddAsync(loginLog);
             await unitOfWork.SaveChangesAsync();
         }
     }
