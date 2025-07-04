@@ -3,6 +3,7 @@ using Ecommerce.Identity.API.Application.DTOs;
 using Ecommerce.Identity.API.Application.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace Ecommerce.Identity.API.Controllers
 {
@@ -20,16 +21,23 @@ namespace Ecommerce.Identity.API.Controllers
             this.logger = logger;
         }
 
+        private Guid GetCurrentUserId()
+        {
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier) ?? User.FindFirst("sub");
+            return userIdClaim != null ? Guid.Parse(userIdClaim.Value) : throw new UnauthorizedAccessException("用户未认证");
+        }
+
         // ---------- 用户资料 ----------
 
-        [HttpGet("{userId}/profile")]
+        [HttpGet("profile")]
         [ProducesResponseType(typeof(UserProfileDto), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<UserProfileDto>> GetProfileAsync(Guid userId)
+        public async Task<ActionResult<UserProfileDto>> GetProfileAsync()
         {
             try
             {
+                var userId = GetCurrentUserId();
                 var profile = await userService.GetProfileAsync(userId);
                 if (profile == null)
                     return NotFound("用户不存在");
@@ -38,84 +46,88 @@ namespace Ecommerce.Identity.API.Controllers
             }
             catch (Exception ex)
             {
-                logger.LogError(ex, "获取用户资料失败，UserId: {UserId}", userId);
+                logger.LogError(ex, "获取用户资料失败");
                 return StatusCode(500, "服务器内部错误");
             }
         }
 
-        [HttpPut("{userId}/profile")]
+        [HttpPut("profile")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> UpdateProfileAsync(Guid userId, [FromBody] UpdateUserProfileCommand command)
+        public async Task<IActionResult> UpdateProfileAsync([FromBody] UpdateUserProfileCommand command)
         {
             try
             {
+                var userId = GetCurrentUserId();
                 await userService.UpdateProfileAsync(userId, command);
                 return NoContent();
             }
             catch (Exception ex)
             {
-                logger.LogError(ex, "更新用户资料失败，UserId: {UserId}", userId);
+                logger.LogError(ex, "更新用户资料失败");
                 return StatusCode(500, "服务器内部错误");
             }
         }
 
         // ---------- 地址管理 ----------
 
-        [HttpPost("{userId}/address")]
+        [HttpPost("address")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> AddAddressAsync(Guid userId, [FromBody] AddUserAddressCommand command)
+        public async Task<IActionResult> AddAddressAsync([FromBody] AddUserAddressCommand command)
         {
             try
             {
+                var userId = GetCurrentUserId();
                 await userService.AddAddressAsync(userId, command);
                 return NoContent();
             }
             catch (Exception ex)
             {
-                logger.LogError(ex, "添加地址失败，UserId: {UserId}", userId);
+                logger.LogError(ex, "添加地址失败");
                 return StatusCode(500, "服务器内部错误");
             }
         }
 
-        [HttpPut("{userId}/address")]
+        [HttpPut("address")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> UpdateAddressAsync(Guid userId, [FromBody] UpdateUserAddressCommand command)
+        public async Task<IActionResult> UpdateAddressAsync([FromBody] UpdateUserAddressCommand command)
         {
             try
             {
+                var userId = GetCurrentUserId();
                 await userService.UpdateAddressAsync(userId, command);
                 return NoContent();
             }
             catch (Exception ex)
             {
-                logger.LogError(ex, "更新地址失败，UserId: {UserId}", userId);
+                logger.LogError(ex, "更新地址失败");
                 return StatusCode(500, "服务器内部错误");
             }
         }
 
-        [HttpDelete("{userId}/address/{addressId}")]
+        [HttpDelete("address/{addressId}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> RemoveAddressAsync(Guid userId, Guid addressId)
+        public async Task<IActionResult> RemoveAddressAsync(Guid addressId)
         {
             try
             {
+                var userId = GetCurrentUserId();
                 await userService.RemoveAddressAsync(userId, addressId);
                 return NoContent();
             }
             catch (Exception ex)
             {
-                logger.LogError(ex, "删除地址失败，UserId: {UserId}, AddressId: {AddressId}", userId, addressId);
+                logger.LogError(ex, "删除地址失败，AddressId: {AddressId}", addressId);
                 return StatusCode(500, "服务器内部错误");
             }
         }
 
         // ---------- 角色管理 ----------
 
-        [HttpPost("{userId}/role/assign")]
+        [HttpPost("role/assign")]
         [Authorize(Roles = "Admin")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -133,7 +145,7 @@ namespace Ecommerce.Identity.API.Controllers
             }
         }
 
-        [HttpDelete("{userId}/role/remove")]
+        [HttpDelete("role/remove")]
         [Authorize(Roles = "Admin")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]

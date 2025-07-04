@@ -42,7 +42,18 @@ namespace Ecommerce.Identity.API.Domain.Aggregates.UserAggregate
             
         }
 
-        public UserAddress(Guid id,Guid userId, string receiverName, string phone, Region region, string detail, bool isDefault)
+        public UserAddress(Guid userId, string receiverName, string phone, Region region, string detail, bool isDefault)
+        {
+            Id = Guid.NewGuid();
+            UserId = userId;
+            ReceiverName = receiverName;
+            Phone = phone;
+            Region = region;
+            Detail = detail;
+            IsDefault = isDefault;
+        }
+
+        public UserAddress(Guid id, Guid userId, string receiverName, string phone, Region region, string detail, bool isDefault)
         {
             Id = id;
             UserId = userId;

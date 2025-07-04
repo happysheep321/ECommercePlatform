@@ -14,8 +14,6 @@ namespace Ecommerce.Identity.API.Application.Services
     public class UserService:IUserService
     {
         private readonly IUserRepository userRepository;
-        private readonly IUserAddressRepository userAddressRepository;
-        private readonly IUserLoginLogRepository userLoginLogRepository;
         private readonly IRoleRepository roleRepository;
         private readonly IPasswordHasher passwordHasher;
         private readonly JwtTokenGenerator jwtTokenGenerator;
@@ -23,11 +21,9 @@ namespace Ecommerce.Identity.API.Application.Services
         private readonly IUnitOfWork unitOfWork;
         private readonly IHttpContextAccessor httpContextAccessor;
 
-        public UserService(IUserRepository userRepository,IUserAddressRepository userAddressRepository , IUserLoginLogRepository userLoginLogRepository , IRoleRepository roleRepository, IPasswordHasher passwordHasher, JwtTokenGenerator jwtTokenGenerator,IRedisHelper redisHelper,IUnitOfWork unitOfWork, IHttpContextAccessor httpContextAccessor)
+        public UserService(IUserRepository userRepository, IRoleRepository roleRepository, IPasswordHasher passwordHasher, JwtTokenGenerator jwtTokenGenerator,IRedisHelper redisHelper,IUnitOfWork unitOfWork, IHttpContextAccessor httpContextAccessor)
         {
             this.userRepository = userRepository;
-            this.userAddressRepository = userAddressRepository;
-            this.userLoginLogRepository = userLoginLogRepository;
             this.roleRepository = roleRepository;
             this.passwordHasher = passwordHasher;
             this.jwtTokenGenerator = jwtTokenGenerator;
@@ -82,7 +78,8 @@ namespace Ecommerce.Identity.API.Application.Services
             var device = httpContextAccessor.HttpContext?.Request.Headers["User-Agent"].ToString() ?? "unknown";
 
             var loginLog = new UserLoginLog(user.Id, ip, device, "未知地区");
-            await userLoginLogRepository.AddAsync(loginLog);
+            user.AddLoginLog(loginLog);
+            userRepository.Update(user);
             await unitOfWork.SaveChangesAsync();
 
             return new LoginResultDto
@@ -169,7 +166,6 @@ namespace Ecommerce.Identity.API.Application.Services
                 throw new UnauthorizedAccessException("用户不存在");
 
             var newAddress = new UserAddress(
-                Guid.NewGuid(),
                 userId,
                 command.ReceiverName,
                 command.Phone,
@@ -179,7 +175,7 @@ namespace Ecommerce.Identity.API.Application.Services
             );
 
             user.AddAddress(newAddress);
-            await userAddressRepository.AddAsync(newAddress);
+            userRepository.Update(user);
             await unitOfWork.SaveChangesAsync();
         }
 
@@ -190,8 +186,8 @@ namespace Ecommerce.Identity.API.Application.Services
                 throw new UnauthorizedAccessException("用户不存在");
 
             // 先从仓储查找原地址
-            var existAddress = await userAddressRepository.GetByIdAsync(command.AddressId);
-            if (existAddress == null || existAddress.UserId != userId)
+            var existAddress = user.Addresses.FirstOrDefault(a => a.Id == command.AddressId);
+            if (existAddress == null)
                 throw new InvalidOperationException("地址不存在或不属于该用户");
 
             // 利用聚合根方法更新地址
@@ -206,6 +202,7 @@ namespace Ecommerce.Identity.API.Application.Services
             );
 
             user.UpdateAddress(updatedAddress);
+            userRepository.Update(user);
             await unitOfWork.SaveChangesAsync();
         }
 
@@ -220,7 +217,7 @@ namespace Ecommerce.Identity.API.Application.Services
                 throw new InvalidOperationException("地址不存在");
 
             user.RemoveAddress(addressToRemove);
-            userAddressRepository.Remove(addressToRemove);
+            userRepository.Update(user);
             await unitOfWork.SaveChangesAsync();
         }
 
@@ -249,10 +246,6 @@ namespace Ecommerce.Identity.API.Application.Services
             var role = await roleRepository.GetByIdAsync(roleId);
             if (role == null)
                 throw new InvalidOperationException("角色不存在");
-
-            // 系统角色不允许被移除
-            if (role.IsSystemRole)
-                throw new InvalidOperationException($"系统内置角色 [{role.Name}] 不能被移除");
 
             if (user.UserRoles.Count == 1)
                 throw new InvalidOperationException("用户不能没有角色");
