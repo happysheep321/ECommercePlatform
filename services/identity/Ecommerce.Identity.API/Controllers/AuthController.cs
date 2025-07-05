@@ -4,6 +4,7 @@ using Ecommerce.Identity.API.Application.Interfaces;
 using Ecommerce.Identity.API.Application.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Net.Mail;
 
 namespace ECommerce.Identity.API.Controllers
 {
@@ -12,11 +13,13 @@ namespace ECommerce.Identity.API.Controllers
     public class AuthController:ControllerBase
     {
         private readonly IUserService userService;
+        private readonly IVerificationCodeService emailVerificationService;
         private readonly ILogger<AuthController> logger;
 
-        public AuthController(IUserService userService, ILogger<AuthController> logger)
+        public AuthController(IUserService userService, IVerificationCodeService emailVerificationService , ILogger<AuthController> logger)
         {
             this.userService = userService;
+            this.emailVerificationService = emailVerificationService;
             this.logger = logger;
         }
 
@@ -81,6 +84,37 @@ namespace ECommerce.Identity.API.Controllers
             {
                 logger.LogError(ex, "用户登录失败");
                 return StatusCode(StatusCodes.Status500InternalServerError, "服务器内部错误");
+            }
+        }
+
+        [HttpPost("send-code")]
+        [AllowAnonymous]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> SendEmailCode([FromBody] EmailCodeCommand command)
+        {
+            try
+            {
+                var success = await emailVerificationService.SendCodeAsync(command.Email);
+                if (!success)
+                {
+                    var msg = $"验证码发送失败，目标邮箱：{command.Email}";
+                    logger.LogWarning(msg);
+                    return StatusCode(500, msg);
+                }
+
+                return Ok("验证码已发送");
+            }
+            catch (SmtpException ex)
+            {
+                logger.LogError(ex, "SMTP 邮件服务异常");
+                return StatusCode(500, "邮件服务器异常，请稍后再试");
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "发送验证码失败：{Message}", ex.Message);
+                return StatusCode(500, $"服务器内部错误：{ex.Message}");
             }
         }
     }

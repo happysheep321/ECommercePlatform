@@ -16,6 +16,7 @@ using Ecommerce.Identity.API.Infrastructure.Behaviors;
 using Ecommerce.Identity.API.Application.Validators;
 using ECommerce.BuildingBolcks.Redis;
 using StackExchange.Redis;
+using Ecommerce.Identity.API.Application.Options;
 
 namespace Ecommerce.Identity.API.Extensions
 {
@@ -67,6 +68,9 @@ namespace Ecommerce.Identity.API.Extensions
         private static void AddDomainServices(this IServiceCollection services)
         {
             services.AddScoped<IUserService, UserService>();
+            services.Configure<EmailOptions>(services.BuildServiceProvider().GetRequiredService<IConfiguration>().GetSection("Email"));
+            services.AddScoped<IEmailSender,SmtpEmailSender>();
+            services.AddScoped<IVerificationCodeService,EmailVerificationService>();
         }
 
         private static void AddMediatRAndBehaviors(this IServiceCollection services)
