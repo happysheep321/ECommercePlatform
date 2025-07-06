@@ -87,6 +87,24 @@ namespace ECommerce.Identity.API.Controllers
             }
         }
 
+        [HttpPost("forgot-password")]
+        [AllowAnonymous]
+        [ProducesResponseType(typeof(LoginResultDto), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordCommand command)
+        {
+            try
+            {
+                await userService.ResetPasswordByEmailAsync(command);
+                return Ok("密码重置成功");
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "密码重置失败：{Message}", ex.Message);
+                return StatusCode(500, $"服务器内部错误：{ex.Message}");
+            }
+        }
+
         [HttpPost("send-code")]
         [AllowAnonymous]
         [ProducesResponseType(StatusCodes.Status200OK)]

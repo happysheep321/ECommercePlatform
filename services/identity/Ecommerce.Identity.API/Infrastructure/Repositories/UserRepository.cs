@@ -33,9 +33,14 @@ namespace Ecommerce.Identity.API.Infrastructure.Repositories
                         .FirstOrDefaultAsync(u => u.UserName == userName);
         }
 
-        public async Task<bool> ExistsByPhoneAsync(string phone)
+        public async Task<User?> GetByEmailAsync(string email)
         {
-            return await this.context.Users.AnyAsync(u => u.PhoneNumber == phone);
+            return await this.context.Users.FirstOrDefaultAsync(u => u.Email == email);
+        }
+
+        public async Task<bool> ExistsByEmailAsync(string email)
+        {
+            return await this.context.Users.AnyAsync(u => u.Email == email);
         }
 
         public async Task AddAsync(User user)

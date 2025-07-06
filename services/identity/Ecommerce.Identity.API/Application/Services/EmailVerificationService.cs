@@ -26,7 +26,7 @@ namespace Ecommerce.Identity.API.Application.Services
             var code = GenerateCode(CodeLength);
             var key=GetRedisKey(email);
 
-            await redisHelper.SetAsync(key, code);
+            await redisHelper.SetAsync(key, code, TimeSpan.FromMinutes(ExpiryMinutes));
             logger.LogInformation($"验证码 {code} 已发送至 {email}，有效期 {ExpiryMinutes} 分钟。");
             return await emailSender.SendEmailAsync(email, "您的验证码", $"您的验证码是：{code}，请在{ExpiryMinutes}分钟内使用。");
         }

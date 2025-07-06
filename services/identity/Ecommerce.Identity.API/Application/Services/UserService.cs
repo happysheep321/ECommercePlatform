@@ -8,6 +8,7 @@ using ECommerce.BuildingBolcks.Authentication;
 using ECommerce.BuildingBolcks.Redis;
 using ECommerce.SharedKernel.Enums;
 using ECommerce.SharedKernel.Interfaces;
+using Microsoft.AspNetCore.Identity;
 
 namespace Ecommerce.Identity.API.Application.Services
 {
@@ -20,8 +21,9 @@ namespace Ecommerce.Identity.API.Application.Services
         private readonly IRedisHelper redisHelper;
         private readonly IUnitOfWork unitOfWork;
         private readonly IHttpContextAccessor httpContextAccessor;
+        private readonly IVerificationCodeService verificationCodeService;
 
-        public UserService(IUserRepository userRepository, IRoleRepository roleRepository, IPasswordHasher passwordHasher, JwtTokenGenerator jwtTokenGenerator,IRedisHelper redisHelper,IUnitOfWork unitOfWork, IHttpContextAccessor httpContextAccessor)
+        public UserService(IUserRepository userRepository, IRoleRepository roleRepository, IPasswordHasher passwordHasher, JwtTokenGenerator jwtTokenGenerator,IRedisHelper redisHelper,IUnitOfWork unitOfWork, IHttpContextAccessor httpContextAccessor, IVerificationCodeService verificationCodeService)
         {
             this.userRepository = userRepository;
             this.roleRepository = roleRepository;
@@ -30,12 +32,19 @@ namespace Ecommerce.Identity.API.Application.Services
             this.redisHelper = redisHelper;
             this.unitOfWork = unitOfWork;
             this.httpContextAccessor = httpContextAccessor;
+            this.verificationCodeService = verificationCodeService;
         }
 
         public async Task<Guid> RegisterAsync(RegisterUserCommand command)
         {
-            if (await userRepository.ExistsByPhoneAsync(command.Phone))
-                throw new InvalidOperationException("手机号已注册");
+            if (await userRepository.ExistsByEmailAsync(command.Email))
+                throw new InvalidOperationException("邮箱已注册");
+
+            var isVerified = await verificationCodeService.VerifyCodeAsync(command.Email, command.EmailVerifyCode);
+            if (isVerified == false)
+            {
+                throw new InvalidOperationException("验证码错误或已过期");
+            }
 
             var user = new User(
                 Guid.NewGuid(),
@@ -89,6 +98,21 @@ namespace Ecommerce.Identity.API.Application.Services
                 UserName = user.UserName,
                 AvatarUrl=user.Profile.AvatarUrl
             };
+        }
+
+        public async Task ResetPasswordByEmailAsync(ForgotPasswordCommand command)
+        {
+            var user = await userRepository.GetByEmailAsync(command.Email);
+            if (user == null)
+                throw new InvalidOperationException("该邮箱未注册");
+
+            var isVerified = await verificationCodeService.VerifyCodeAsync(command.Email, command.EmailVerifyCode);
+            if (!isVerified)
+                throw new InvalidOperationException("验证码无效或已过期");
+
+            user.PasswordHash = passwordHasher.HashPassword(command.NewPassword);
+            userRepository.Update(user);
+            await unitOfWork.SaveChangesAsync();
         }
 
         public async Task<UserProfileDto> GetProfileAsync(Guid userId)
@@ -154,7 +178,24 @@ namespace Ecommerce.Identity.API.Application.Services
                 updatedGender
                 );
 
-            user.UpdateProfile( updateProfile );
+            user.UpdateProfile(updateProfile);
+            userRepository.Update(user);
+            await unitOfWork.SaveChangesAsync();
+        }
+
+        public async Task ChangePasswordAsync(Guid userId,ChangePasswordCommand command)
+        {
+            var user = await userRepository.GetByIdAsync(userId);
+            if (user == null)
+                throw new UnauthorizedAccessException("用户不存在");
+
+            var isCorrect = passwordHasher.VerifyPassword(user.PasswordHash, command.CurrentPassword);
+            if (!isCorrect)
+                throw new InvalidOperationException("当前密码不正确");
+
+            var newPasswordHash = passwordHasher.HashPassword(command.NewPassword);
+            user.PasswordHash = newPasswordHash;
+
             userRepository.Update(user);
             await unitOfWork.SaveChangesAsync();
         }

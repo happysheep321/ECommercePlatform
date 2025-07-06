@@ -9,9 +9,14 @@ namespace Ecommerce.Identity.API.Application.Interfaces
         Task<Guid> RegisterAsync(RegisterUserCommand command);
         Task<LoginResultDto> LoginAsync(LoginUserCommand command);
 
+        // 忘记密码
+        Task ResetPasswordByEmailAsync(ForgotPasswordCommand command);
+
         // 用户资料
         Task<UserProfileDto> GetProfileAsync(Guid userId);
         Task UpdateProfileAsync(Guid userId, UpdateUserProfileCommand command);
+
+        Task ChangePasswordAsync(Guid userId, ChangePasswordCommand command);
 
         // 地址管理
         Task AddAddressAsync(Guid userId, AddUserAddressCommand command);

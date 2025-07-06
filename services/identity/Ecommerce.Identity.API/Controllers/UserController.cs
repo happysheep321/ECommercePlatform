@@ -69,6 +69,25 @@ namespace Ecommerce.Identity.API.Controllers
             }
         }
 
+        [HttpPut("change-password")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> ChangePasswordPasswordAsync([FromBody] ChangePasswordCommand command)
+        {
+            try
+            {
+                var userId = GetCurrentUserId();
+                await userService.ChangePasswordAsync(userId, command);
+                return NoContent();
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "修改密码失败");
+                return StatusCode(500, "服务器内部错误");
+            }
+        }
+
         // ---------- 地址管理 ----------
 
         [HttpPost("address")]

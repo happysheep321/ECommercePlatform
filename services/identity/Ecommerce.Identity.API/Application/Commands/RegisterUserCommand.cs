@@ -20,9 +20,14 @@ namespace Ecommerce.Identity.API.Application.Commands
         public required string Phone { get; set; }
 
         /// <summary>
-        /// 电子邮箱（可选）
+        /// 电子邮箱
         /// </summary>
         public string Email { get; set; } = default!;
+
+        /// <summary>
+        /// 邮箱验证码
+        /// </summary>
+        public string EmailVerifyCode {  get; set; }= default!;
 
         /// <summary>
         /// 用户类型

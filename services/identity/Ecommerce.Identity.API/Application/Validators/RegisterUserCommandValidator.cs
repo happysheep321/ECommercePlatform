@@ -21,6 +21,10 @@ namespace Ecommerce.Identity.API.Application.Validators
 
             RuleFor(x => x.Email)
                 .EmailAddress().When(x => !string.IsNullOrWhiteSpace(x.Email)).WithMessage("邮箱格式不正确");
+
+            RuleFor(x => x.EmailVerifyCode)
+                .NotEmpty().WithMessage("验证码不能为空")
+                .Length(6).WithMessage("验证码应为 6 位数字");
         }
     }
 }
