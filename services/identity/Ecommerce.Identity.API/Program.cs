@@ -1,4 +1,4 @@
-using Ecommerce.Identity.API.Application.Interfaces;
+ï»¿using Ecommerce.Identity.API.Application.Interfaces;
 using Ecommerce.Identity.API.Application.Services;
 using Ecommerce.Identity.API.Extensions;
 using Ecommerce.Identity.API.Infrastructure;
@@ -13,8 +13,8 @@ builder.ConfigureIdentityServices();
 
 var app = builder.Build();
 
-// Æô¶¯Ê±´òÓ¡·þÎñÃû
-Log.Information("----------Æô¶¯ Identity Î¢·þÎñ----------");
+// Print service name on startup
+Log.Information("----------å¯åŠ¨ Identity å¾®æœåŠ¡----------");
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
@@ -26,6 +26,19 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 
 app.UseAuthorization();
+
+// Middleware to block direct access; requests must come through the gateway
+app.Use(async (context, next) =>
+{
+    if (!context.Request.Headers.TryGetValue("X-Gateway-Auth", out var header) || header != "true")
+    {
+        context.Response.StatusCode = 403;
+        await context.Response.WriteAsync("Forbidden: Must access via gateway.");
+        return;
+    }
+
+    await next();
+});
 
 app.MapControllers();
 
