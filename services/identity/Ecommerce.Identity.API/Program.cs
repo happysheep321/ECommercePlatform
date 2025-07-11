@@ -1,10 +1,4 @@
-﻿using Ecommerce.Identity.API.Application.Interfaces;
-using Ecommerce.Identity.API.Application.Services;
-using Ecommerce.Identity.API.Extensions;
-using Ecommerce.Identity.API.Infrastructure;
-using ECommerce.BuildingBlocks.Logging;
-using ECommerce.BuildingBolcks.Authentication;
-using Microsoft.EntityFrameworkCore;
+﻿using Ecommerce.Identity.API.Extensions;
 using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -25,6 +19,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+app.UseAuthentication();
 app.UseAuthorization();
 
 // Middleware to block direct access; requests must come through the gateway
