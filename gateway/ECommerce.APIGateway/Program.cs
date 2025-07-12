@@ -34,13 +34,11 @@ builder.Services.AddAuthentication(options =>
         };
     });
 
-builder.Services.AddAuthorization(options =>
-{
-    options.AddPolicy("Default", policy =>
+builder.Services.AddAuthorizationBuilder()
+    .AddPolicy("Default", policy =>
     {
         policy.RequireAuthenticatedUser();
     });
-});
 
 // Add services to the container.
 SerilogConfiguration.ConfigureSerilog(builder.Configuration, "Gateway");
@@ -50,14 +48,25 @@ builder.Services
     .AddReverseProxy()
     .LoadFromConfig(builder.Configuration.GetSection("ReverseProxy"));
 
+// Add Cross-Domain Policies
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAll", policy =>
+    {
+        policy.AllowAnyOrigin()
+        .AllowAnyHeader()
+        .AllowAnyMethod();
+    });
+});
+
 var app = builder.Build();
 
 // 启动时打印服务名
 Log.Information("----------启动 Gateway 服务----------");
 
-app.UseHttpsRedirection();
-
 app.UseRouting();
+
+app.UseCors("AllowAll");
 
 app.UseAuthentication();
 app.UseAuthorization();
