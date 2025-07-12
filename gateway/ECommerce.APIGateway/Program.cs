@@ -35,7 +35,7 @@ builder.Services.AddAuthentication(options =>
     });
 
 builder.Services.AddAuthorizationBuilder()
-    .AddPolicy("Default", policy =>
+    .AddPolicy("ECommerceDefault", policy =>
     {
         policy.RequireAuthenticatedUser();
     });

@@ -1,7 +1,6 @@
 ﻿using Ecommerce.Identity.API.Application.Commands;
 using Ecommerce.Identity.API.Application.DTOs;
 using Ecommerce.Identity.API.Application.Interfaces;
-using Ecommerce.Identity.API.Application.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Net.Mail;
