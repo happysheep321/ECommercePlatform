@@ -26,6 +26,10 @@ namespace Ecommerce.Identity.API.Infrastructure.EntityConfigs
                 .IsRequired()
                 .HasDefaultValue(false);
 
+            builder.Property(r => r.Enabled)
+                .IsRequired()
+                .HasDefaultValue(true);
+
             builder.Metadata
                 .FindNavigation(nameof(Role.RolePermissions))?
                 .SetPropertyAccessMode(PropertyAccessMode.Field);

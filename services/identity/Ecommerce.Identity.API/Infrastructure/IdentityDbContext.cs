@@ -1,6 +1,7 @@
 ﻿using Ecommerce.Identity.API.Domain.Aggregates.PermissionAggregate;
 using Ecommerce.Identity.API.Domain.Aggregates.RoleAggregate;
 using Ecommerce.Identity.API.Domain.Aggregates.UserAggregate;
+using ECommerce.SharedKernel.Enums;
 using Microsoft.EntityFrameworkCore;
 
 namespace Ecommerce.Identity.API.Infrastructure
@@ -32,62 +33,104 @@ namespace Ecommerce.Identity.API.Infrastructure
 
             // 角色基础数据
             modelBuilder.Entity<Role>().HasData(
-                new Role(Guid.Parse("11111111-1111-1111-1111-111111111111"), "Admin", "管理员", true),
-                new Role(Guid.Parse("22222222-2222-2222-2222-222222222222"), "Seller", "卖家", true),
-                new Role(Guid.Parse("33333333-3333-3333-3333-333333333333"), "Buyer", "买家", true),
-                new Role(Guid.Parse("44444444-4444-4444-4444-444444444444"), "Guest", "访客", true)
+                new
+                {
+                    Id = Guid.Parse("11111111-1111-1111-1111-111111111111"),
+                    Name = "Admin",
+                    Description = "管理员",
+                    Enabled = true,
+                    IsSystemRole = true
+                },
+                new
+                {
+                    Id = Guid.Parse("22222222-2222-2222-2222-222222222222"),
+                    Name = "Seller",
+                    Description = "卖家",
+                    Enabled = true,
+                    IsSystemRole = true
+                },
+                new
+                {
+                    Id = Guid.Parse("33333333-3333-3333-3333-333333333333"),
+                    Name = "Buyer",
+                    Description = "买家",
+                    Enabled = true,
+                    IsSystemRole = true
+                },
+                new
+                {
+                    Id = Guid.Parse("44444444-4444-4444-4444-444444444444"),
+                    Name = "Guest",
+                    Description = "访客",
+                    Enabled = true,
+                    IsSystemRole = true
+                }
             );
 
+            // 权限基础数据
             modelBuilder.Entity<Permission>().HasData(
-                new Permission(Guid.Parse("aaaa1111-0000-0000-0000-000000000001"), "User.View", "查看用户"),
-                new Permission(Guid.Parse("aaaa1111-0000-0000-0000-000000000002"), "User.Edit", "编辑用户"),
-                new Permission(Guid.Parse("aaaa1111-0000-0000-0000-000000000003"), "User.Delete", "删除用户"),
-                new Permission(Guid.Parse("aaaa1111-0000-0000-0000-000000000004"), "Order.View", "查看订单"),
-                new Permission(Guid.Parse("aaaa1111-0000-0000-0000-000000000005"), "Order.Manage", "管理订单")
+                new
+                {
+                    Id = Guid.Parse("aaaa1111-0000-0000-0000-000000000001"),
+                    Name = "Page:User.View",
+                    DisplayName = "用户管理页面",
+                    Type = (int)PermissionType.Page, // 假设PermissionType是枚举，这里转换成int
+                    Enabled = true,
+                    Description = "用户管理页面"
+                },
+                new
+                {
+                    Id = Guid.Parse("aaaa1111-0000-0000-0000-000000000004"),
+                    Name = "Page:Order.View",
+                    DisplayName = "订单管理页面",
+                    Type = (int)PermissionType.Page,
+                    Enabled = true,
+                    Description = "订单管理页面"
+                },
+                new
+                {
+                    Id = Guid.Parse("aaaa1111-0000-0000-0000-000000000002"),
+                    Name = "Permission:User.Edit",
+                    DisplayName = "编辑用户",
+                    Type = (int)PermissionType.Function,
+                    Enabled = true,
+                    Description = "编辑用户"
+                },
+                new
+                {
+                    Id = Guid.Parse("aaaa1111-0000-0000-0000-000000000003"),
+                    Name = "Permission:User.Delete",
+                    DisplayName = "删除用户",
+                    Type = (int)PermissionType.Function,
+                    Enabled = true,
+                    Description = "删除用户"
+                },
+                new
+                {
+                    Id = Guid.Parse("aaaa1111-0000-0000-0000-000000000005"),
+                    Name = "Permission:Order.Manage",
+                    DisplayName = "管理订单",
+                    Type = (int)PermissionType.Function,
+                    Enabled = true,
+                    Description = "管理订单"
+                }
             );
+
 
 
             modelBuilder.Entity<RolePermission>().HasData(
-                // Admin
-                new RolePermission
-                {
-                    RoleId = Guid.Parse("11111111-1111-1111-1111-111111111111"),
-                    PermissionId = Guid.Parse("aaaa1111-0000-0000-0000-000000000001")
-                },
-                new RolePermission
-                {
-                    RoleId = Guid.Parse("11111111-1111-1111-1111-111111111111"),
-                    PermissionId = Guid.Parse("aaaa1111-0000-0000-0000-000000000002")
-                },
-                new RolePermission
-                {
-                    RoleId = Guid.Parse("11111111-1111-1111-1111-111111111111"),
-                    PermissionId = Guid.Parse("aaaa1111-0000-0000-0000-000000000003")
-                },
-                new RolePermission
-                {
-                    RoleId = Guid.Parse("11111111-1111-1111-1111-111111111111"),
-                    PermissionId = Guid.Parse("aaaa1111-0000-0000-0000-000000000004")
-                },
-                new RolePermission
-                {
-                    RoleId = Guid.Parse("11111111-1111-1111-1111-111111111111"),
-                    PermissionId = Guid.Parse("aaaa1111-0000-0000-0000-000000000005")
-                },
+                // Admin 拥有所有权限
+                new { RoleId = Guid.Parse("11111111-1111-1111-1111-111111111111"), PermissionId = Guid.Parse("aaaa1111-0000-0000-0000-000000000001") },
+                new { RoleId = Guid.Parse("11111111-1111-1111-1111-111111111111"), PermissionId = Guid.Parse("aaaa1111-0000-0000-0000-000000000002") },
+                new { RoleId = Guid.Parse("11111111-1111-1111-1111-111111111111"), PermissionId = Guid.Parse("aaaa1111-0000-0000-0000-000000000003") },
+                new { RoleId = Guid.Parse("11111111-1111-1111-1111-111111111111"), PermissionId = Guid.Parse("aaaa1111-0000-0000-0000-000000000004") },
+                new { RoleId = Guid.Parse("11111111-1111-1111-1111-111111111111"), PermissionId = Guid.Parse("aaaa1111-0000-0000-0000-000000000005") },
 
-                // Seller
-                new RolePermission
-                {
-                    RoleId = Guid.Parse("22222222-2222-2222-2222-222222222222"),
-                    PermissionId = Guid.Parse("aaaa1111-0000-0000-0000-000000000005")
-                },
+                // Seller 只管理订单权限
+                new { RoleId = Guid.Parse("22222222-2222-2222-2222-222222222222"), PermissionId = Guid.Parse("aaaa1111-0000-0000-0000-000000000005") },
 
-                // Buyer
-                new RolePermission
-                {
-                    RoleId = Guid.Parse("33333333-3333-3333-3333-333333333333"),
-                    PermissionId = Guid.Parse("aaaa1111-0000-0000-0000-000000000004")
-                }
+                // Buyer 只查看订单权限
+                new { RoleId = Guid.Parse("33333333-3333-3333-3333-333333333333"), PermissionId = Guid.Parse("aaaa1111-0000-0000-0000-000000000004") }
             );
         }
     }

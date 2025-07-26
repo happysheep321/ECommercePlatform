@@ -1,5 +1,4 @@
 ﻿using Ecommerce.Identity.API.Domain.Aggregates.PermissionAggregate;
-using Ecommerce.Identity.API.Domain.Aggregates.RoleAggregate;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -18,6 +17,18 @@ namespace Ecommerce.Identity.API.Infrastructure.EntityConfigs
             builder.Property(p => p.Name)
                 .IsRequired()
                 .HasMaxLength(100);
+
+            builder.Property(p => p.DisplayName)
+                .IsRequired()
+                .HasMaxLength(100);
+
+            builder.Property(p => p.Type)
+                .HasConversion<int>() // 枚举转为 int 存储
+                .IsRequired();
+
+            builder.Property(p => p.Enabled)
+                .IsRequired()
+                .HasDefaultValue(true);
 
             builder.Property(p => p.Description)
                 .HasMaxLength(256);
