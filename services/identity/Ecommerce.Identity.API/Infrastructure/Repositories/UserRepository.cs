@@ -17,9 +17,7 @@ namespace Ecommerce.Identity.API.Infrastructure.Repositories
         {
             return await this.context.Users
                         .Include(u=>u.Addresses)
-                        .Include(u => u.LoginLogs)
-                        .Include(u=>u.UserRoles)
-                            .ThenInclude(ur => ur.Role)
+                        .Include(u => u.UserRoles)
                         .FirstOrDefaultAsync(u => u.Id == id);
         }
 
@@ -27,9 +25,7 @@ namespace Ecommerce.Identity.API.Infrastructure.Repositories
         {
             return await this.context.Users
                         .Include(u => u.Addresses)
-                        .Include(u => u.LoginLogs)
                         .Include(u => u.UserRoles)
-                            .ThenInclude(ur => ur.Role)
                         .FirstOrDefaultAsync(u => u.UserName == userName);
         }
 
@@ -80,39 +76,6 @@ namespace Ecommerce.Identity.API.Infrastructure.Repositories
             foreach (var removed in removedAddresses)
             {
                 context.UserAddresses.Remove(removed);
-            }
-
-            //处理 UserLoginLogs 子集合
-            var trackedLoginLogs = context.UserLoginLogs
-                                    .Where(log => log.UserId == user.Id)
-                                    .ToList();
-
-            var newLoginLogs = user.LoginLogs
-                .Where(log => !trackedLoginLogs.Any(tlog => tlog.Id == log.Id))
-                .ToList();
-
-            context.UserLoginLogs.AddRange(newLoginLogs);
-
-            //处理 UserRoles 子集合
-            var trackedUserRoles = context.UserRoles
-                                    .Where(r => r.UserId == user.Id)
-                                    .ToList();
-
-            foreach (var userRole in user.UserRoles)
-            {
-                if (!trackedUserRoles.Any(r => r.RoleId == userRole.RoleId))
-                {
-                    context.UserRoles.Add(userRole);
-                }
-            }
-
-            var removedRoles = trackedUserRoles
-                                .Where(existing => !user.UserRoles.Any(r => r.RoleId == existing.RoleId))
-                                .ToList();
-
-            foreach (var removed in removedRoles)
-            {
-                context.UserRoles.Remove(removed);
             }
         }
 

@@ -1,8 +1,8 @@
-﻿using Ecommerce.SharedKernel.Base;
+using Ecommerce.SharedKernel.Base;
 
 namespace Ecommerce.Identity.API.Domain.Aggregates.UserAggregate
 {
-    public class UserLoginLog : Entity<Guid>
+    public class UserLoginLog : EntityBase<Guid>
     {
         /// <summary>
         /// 用户Id

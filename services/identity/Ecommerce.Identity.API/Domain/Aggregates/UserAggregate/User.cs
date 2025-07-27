@@ -1,12 +1,16 @@
-﻿using Ecommerce.Identity.API.Domain.Aggregates.RoleAggregate;
+using Ecommerce.Identity.API.Domain.Aggregates.RoleAggregate;
+using Ecommerce.Identity.API.Domain.Events;
 using Ecommerce.Identity.API.Domain.ValueObjects;
 using Ecommerce.SharedKernel.Base;
 using Ecommerce.SharedKernel.Interfaces;
 using ECommerce.SharedKernel.Enums;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Ecommerce.Identity.API.Domain.Aggregates.UserAggregate
 {
-    public class User : Entity<Guid>, IAggregateRoot
+    public class User : EntityBase<Guid>
     {
         /// <summary>
         /// 用户名
@@ -52,30 +56,27 @@ namespace Ecommerce.Identity.API.Domain.Aggregates.UserAggregate
         }
 
         // ==== 用户角色 ====
-        private readonly List<UserRole> userRoles = new();
+        private readonly HashSet<UserRole> userRoles = new();
 
-        public IReadOnlyCollection<UserRole> UserRoles => userRoles.AsReadOnly();
+        public IReadOnlyCollection<UserRole> UserRoles => userRoles;
 
         public void AddRole(Role role)
         {
             if (role == null) throw new ArgumentNullException(nameof(role));
-            if (userRoles.Any(ur => ur.RoleId == role.Id))
-                return; // 已有该角色，不重复添加
-
-            userRoles.Add(new UserRole
-            {
-                User = this,
-                UserId = this.Id,
-                Role = role,
-                RoleId = role.Id
-            });
+            var userRole = new UserRole(this.Id, role.Id);
+            if (userRoles.Contains(userRole))
+                return;
+            userRoles.Add(userRole);
+            AddDomainEvent(new UserRoleAssignedEvent(this.Id, role.Id));
         }
 
         public void RemoveRole(Guid roleId)
         {
-            var userRole = userRoles.FirstOrDefault(ur => ur.RoleId == roleId);
-            if (userRole != null)
-                userRoles.Remove(userRole);
+            var userRole = new UserRole(this.Id, roleId);
+            if (userRoles.Remove(userRole))
+            {
+                AddDomainEvent(new UserRoleRemovedEvent(this.Id, roleId));
+            }
         }
 
         // ==== 用户地址 ====
@@ -143,17 +144,6 @@ namespace Ecommerce.Identity.API.Domain.Aggregates.UserAggregate
 
             addresses.Remove(address);
         }
-
-        // ==== 用户登录日志 ====
-        private readonly List<UserLoginLog> loginLogs = new();
-
-        public IReadOnlyCollection<UserLoginLog> LoginLogs => loginLogs.AsReadOnly();
-
-        public void AddLoginLog(UserLoginLog userLoginLog)
-        {
-            loginLogs.Add(userLoginLog);
-        }
-
 
         // ==== 构造函数 ====
         protected User() { }

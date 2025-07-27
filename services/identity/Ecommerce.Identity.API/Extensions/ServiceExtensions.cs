@@ -1,4 +1,4 @@
-﻿using ECommerce.BuildingBlocks.Logging;
+using ECommerce.BuildingBlocks.Logging;
 using ECommerce.BuildingBolcks.Authentication;
 using Ecommerce.Identity.API.Application.Interfaces;
 using Ecommerce.Identity.API.Application.Services;

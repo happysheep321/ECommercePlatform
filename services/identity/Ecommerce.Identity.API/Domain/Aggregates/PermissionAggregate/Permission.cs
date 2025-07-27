@@ -1,10 +1,11 @@
-﻿using Ecommerce.SharedKernel.Base;
+using Ecommerce.SharedKernel.Base;
 using Ecommerce.SharedKernel.Interfaces;
 using ECommerce.SharedKernel.Enums;
+using Ecommerce.SharedKernel.Events;
 
 namespace Ecommerce.Identity.API.Domain.Aggregates.PermissionAggregate
 {
-    public class Permission : Entity<Guid>, IAggregateRoot
+    public class Permission : EntityBase<Guid>
     {
         /// <summary>
         /// 唯一标识，例如 "Permission:Order.Create"、"Page:Dashboard.View"

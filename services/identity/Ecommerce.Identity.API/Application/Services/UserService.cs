@@ -2,8 +2,10 @@
 using Ecommerce.Identity.API.Application.DTOs;
 using Ecommerce.Identity.API.Application.Interfaces;
 using Ecommerce.Identity.API.Domain.Aggregates.UserAggregate;
+using Ecommerce.Identity.API.Domain.Events;
 using Ecommerce.Identity.API.Domain.Repositories;
 using Ecommerce.Identity.API.Domain.ValueObjects;
+using Ecommerce.SharedKernel.Events;
 using ECommerce.BuildingBolcks.Authentication;
 using ECommerce.BuildingBolcks.Redis;
 using ECommerce.SharedKernel.Enums;
@@ -86,8 +88,7 @@ namespace Ecommerce.Identity.API.Application.Services
             var ip = httpContextAccessor.HttpContext?.Connection.RemoteIpAddress?.ToString() ?? "unknown";
             var device = httpContextAccessor.HttpContext?.Request.Headers["User-Agent"].ToString() ?? "unknown";
 
-            var loginLog = new UserLoginLog(user.Id, ip, device, "未知地区");
-            user.AddLoginLog(loginLog);
+            user.AddDomainEvent(new UserLoggedInEvent(user.Id, ip, device, "未知地区"));
             userRepository.Update(user);
             await unitOfWork.SaveChangesAsync();
 
@@ -144,8 +145,8 @@ namespace Ecommerce.Identity.API.Application.Services
                 Roles = user.UserRoles.Select(ur => new RoleDto
                 {
                     RoleId = ur.RoleId,
-                    Name = ur.Role.Name!,
-                    Description = ur.Role.Description,
+                    Name = roleRepository.GetByIdAsync(ur.RoleId).Result?.Name ?? string.Empty,
+                    Description = roleRepository.GetByIdAsync(ur.RoleId).Result?.Description ?? string.Empty,
                 }).ToList(),
             };
         }

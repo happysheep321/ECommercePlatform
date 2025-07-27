@@ -36,7 +36,7 @@ namespace Ecommerce.Identity.API.Infrastructure.EntityConfigs
 
             builder
                 .HasMany(r => r.RolePermissions)
-                .WithOne(rp => rp.Role)
+                .WithOne()
                 .HasForeignKey(rp => rp.RoleId)
                 .OnDelete(DeleteBehavior.Cascade);
         }

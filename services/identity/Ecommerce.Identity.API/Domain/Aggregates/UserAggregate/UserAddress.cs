@@ -1,9 +1,9 @@
-﻿using Ecommerce.Identity.API.Domain.ValueObjects;
+using Ecommerce.Identity.API.Domain.ValueObjects;
 using Ecommerce.SharedKernel.Base;
 
 namespace Ecommerce.Identity.API.Domain.Aggregates.UserAggregate
 {
-    public class UserAddress : Entity<Guid>
+    public class UserAddress : EntityBase<Guid>
     {
         /// <summary>
         /// 用户Id

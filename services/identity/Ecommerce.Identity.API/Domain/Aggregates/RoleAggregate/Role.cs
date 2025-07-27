@@ -1,10 +1,12 @@
-﻿using Ecommerce.Identity.API.Domain.Aggregates.PermissionAggregate;
+using Ecommerce.Identity.API.Domain.Aggregates.PermissionAggregate;
 using Ecommerce.SharedKernel.Base;
 using Ecommerce.SharedKernel.Interfaces;
+using Ecommerce.SharedKernel.Events;
+using Ecommerce.Identity.API.Domain.Events;
 
 namespace Ecommerce.Identity.API.Domain.Aggregates.RoleAggregate
 {
-    public class Role:Entity<Guid>,IAggregateRoot
+    public class Role : EntityBase<Guid>
     {
         /// <summary>
         /// 角色名称
@@ -23,9 +25,9 @@ namespace Ecommerce.Identity.API.Domain.Aggregates.RoleAggregate
         /// </summary>
         public bool IsSystemRole { get; private set; } = false;
 
-        private readonly List<RolePermission> rolePermissions = new();
+        private readonly HashSet<RolePermission> rolePermissions = new();
 
-        public IReadOnlyCollection<RolePermission> RolePermissions => rolePermissions.AsReadOnly();
+        public IReadOnlyCollection<RolePermission> RolePermissions => rolePermissions;
 
         /// <summary>
         /// EF Core无参构造函数
@@ -49,7 +51,7 @@ namespace Ecommerce.Identity.API.Domain.Aggregates.RoleAggregate
             Description = description;
             IsSystemRole = isSystemRole;
             Enabled = true;
-            rolePermissions = new List<RolePermission>();
+            rolePermissions = new HashSet<RolePermission>();
         }
 
         public void Enable()=>Enabled=true;
@@ -58,32 +60,23 @@ namespace Ecommerce.Identity.API.Domain.Aggregates.RoleAggregate
 
         public bool AddPermission(Permission permission)
         {
-            if(permission == null) 
+            if (permission == null)
                 throw new ArgumentNullException(nameof(permission));
-
-            if (rolePermissions.Any(rp => rp.PermissionId == permission.Id)) 
+            var rolePermission = new RolePermission(this.Id, permission.Id);
+            if (!rolePermissions.Add(rolePermission))
                 return false;
-
-            rolePermissions.Add(new RolePermission 
-            {
-                Role=this,
-                RoleId=Id,
-                Permission=permission,
-                PermissionId=permission.Id
-            });
-
+            AddDomainEvent(new RolePermissionGrantedEvent(this.Id, permission.Id));
             return true;
         }
 
         public bool RemovePermission(Guid permissionId)
         {
-            var rolePermission = rolePermissions.FirstOrDefault(rp=>rp.PermissionId == permissionId);
-            if(rolePermission != null)
-            { 
-                rolePermissions.Remove(rolePermission);
+            var rolePermission = new RolePermission(this.Id, permissionId);
+            if (rolePermissions.Remove(rolePermission))
+            {
+                AddDomainEvent(new RolePermissionRevokedEvent(this.Id, permissionId));
                 return true;
             }
-
             return false;
         }
 

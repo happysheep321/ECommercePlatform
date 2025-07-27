@@ -4,6 +4,7 @@ using Serilog;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.ConfigureIdentityServices();
+builder.Services.AddDomainEventHandlers();
 
 var app = builder.Build();
 
