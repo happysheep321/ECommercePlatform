@@ -2,15 +2,13 @@
 using Ecommerce.Identity.API.Application.DTOs;
 using Ecommerce.Identity.API.Application.Interfaces;
 using Ecommerce.Identity.API.Domain.Aggregates.UserAggregate;
-using Ecommerce.Identity.API.Domain.Events;
 using Ecommerce.Identity.API.Domain.Repositories;
 using Ecommerce.Identity.API.Domain.ValueObjects;
-using Ecommerce.SharedKernel.Events;
 using ECommerce.BuildingBolcks.Authentication;
 using ECommerce.BuildingBolcks.Redis;
 using ECommerce.SharedKernel.Enums;
 using ECommerce.SharedKernel.Interfaces;
-using Microsoft.AspNetCore.Identity;
+using Serilog;
 
 namespace Ecommerce.Identity.API.Application.Services
 {
@@ -22,10 +20,11 @@ namespace Ecommerce.Identity.API.Application.Services
         private readonly JwtTokenGenerator jwtTokenGenerator;
         private readonly IRedisHelper redisHelper;
         private readonly IUnitOfWork unitOfWork;
+        private readonly ILogger<UserService> logger;
         private readonly IHttpContextAccessor httpContextAccessor;
         private readonly IVerificationCodeService verificationCodeService;
 
-        public UserService(IUserRepository userRepository, IRoleRepository roleRepository, IPasswordHasher passwordHasher, JwtTokenGenerator jwtTokenGenerator,IRedisHelper redisHelper,IUnitOfWork unitOfWork, IHttpContextAccessor httpContextAccessor, IVerificationCodeService verificationCodeService)
+        public UserService(IUserRepository userRepository, IRoleRepository roleRepository, IPasswordHasher passwordHasher, JwtTokenGenerator jwtTokenGenerator,IRedisHelper redisHelper,IUnitOfWork unitOfWork, ILogger<UserService> logger, IHttpContextAccessor httpContextAccessor, IVerificationCodeService verificationCodeService)
         {
             this.userRepository = userRepository;
             this.roleRepository = roleRepository;
@@ -33,6 +32,7 @@ namespace Ecommerce.Identity.API.Application.Services
             this.jwtTokenGenerator = jwtTokenGenerator;
             this.redisHelper = redisHelper;
             this.unitOfWork = unitOfWork;
+            this.logger = logger;
             this.httpContextAccessor = httpContextAccessor;
             this.verificationCodeService = verificationCodeService;
         }
@@ -81,6 +81,10 @@ namespace Ecommerce.Identity.API.Application.Services
             var user = await userRepository.GetByUserNameAsync(command.UserName);
             if (user == null || !passwordHasher.VerifyPassword(user.PasswordHash!, command.Password))
             {
+                logger.LogWarning("登录失败，用户名或密码错误。Username: {UserName}, SourceIp: {IP}",
+                    command.UserName,
+                    httpContextAccessor.HttpContext?.Connection.RemoteIpAddress?.ToString() ?? "unknown");
+
                 throw new UnauthorizedAccessException("用户名或密码错误");
             }
 
@@ -88,7 +92,9 @@ namespace Ecommerce.Identity.API.Application.Services
             var ip = httpContextAccessor.HttpContext?.Connection.RemoteIpAddress?.ToString() ?? "unknown";
             var device = httpContextAccessor.HttpContext?.Request.Headers["User-Agent"].ToString() ?? "unknown";
 
-            user.AddDomainEvent(new UserLoggedInEvent(user.Id, ip, device, "未知地区"));
+            logger.LogInformation("用户登录成功。UserId: {UserId}, UserName: {UserName}, IP: {IP}, Device: {Device}",
+                user.Id, user.UserName, ip, device);
+
             userRepository.Update(user);
             await unitOfWork.SaveChangesAsync();
 

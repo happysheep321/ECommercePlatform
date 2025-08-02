@@ -1,7 +1,6 @@
 ﻿using Ecommerce.Identity.API.Domain.Aggregates.RoleAggregate;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Microsoft.EntityFrameworkCore;
-using Ecommerce.Identity.API.Domain.Aggregates.UserAggregate;
 
 namespace Ecommerce.Identity.API.Infrastructure.EntityConfigs
 {

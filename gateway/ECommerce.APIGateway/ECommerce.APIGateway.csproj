@@ -18,12 +18,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Configs\" />
-    <Folder Include="Middlewares\" />
-    <Folder Include="Extensions\" />
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\..\infrastructure\ECommerce.BuildingBolcks\ECommerce.BuildingBolcks.csproj" />
   </ItemGroup>
 

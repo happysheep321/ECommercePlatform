@@ -50,12 +50,15 @@ namespace Ecommerce.Identity.API.Infrastructure.EntityConfigs
                     .HasColumnName("Profile_Gender");
             });
 
-            // 保留 builder.HasMany(u => u.UserRoles) 配置，无需直接操作UserRoles集合
+            builder.Metadata
+                .FindNavigation(nameof(User.UserRoles))!
+                .SetPropertyAccessMode(PropertyAccessMode.Field);
+
             builder.HasMany(u => u.UserRoles)
-               .WithOne()
-               .HasForeignKey(ur => ur.UserId)
-               .IsRequired()
-               .OnDelete(DeleteBehavior.Cascade);
+                .WithOne() // 无反向导航
+                .HasForeignKey(ur => ur.UserId)
+                .IsRequired()
+                .OnDelete(DeleteBehavior.Cascade);
 
 
             // 配置地址为导航属性

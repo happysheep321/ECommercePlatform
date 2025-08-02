@@ -1,12 +1,14 @@
 using Ecommerce.SharedKernel.Events;
-using System;
 
 namespace Ecommerce.Identity.API.Domain.Events
 {
-    public class RolePermissionGrantedEvent : DomainEvent
+    public class RolePermissionGrantedEvent : IDomainEvent
     {
         public Guid RoleId { get; }
         public Guid PermissionId { get; }
+
+        public DateTime OccurredOn { get; } = DateTime.UtcNow;
+
         public RolePermissionGrantedEvent(Guid roleId, Guid permissionId)
         {
             RoleId = roleId;

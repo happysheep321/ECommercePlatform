@@ -56,9 +56,9 @@ namespace Ecommerce.Identity.API.Domain.Aggregates.UserAggregate
         }
 
         // ==== 用户角色 ====
-        private readonly HashSet<UserRole> userRoles = new();
+        private readonly List<UserRole> userRoles = new();
 
-        public IReadOnlyCollection<UserRole> UserRoles => userRoles;
+        public IReadOnlyCollection<UserRole> UserRoles => userRoles.AsReadOnly();
 
         public void AddRole(Role role)
         {
@@ -72,9 +72,10 @@ namespace Ecommerce.Identity.API.Domain.Aggregates.UserAggregate
 
         public void RemoveRole(Guid roleId)
         {
-            var userRole = new UserRole(this.Id, roleId);
-            if (userRoles.Remove(userRole))
+            var userRole = userRoles.FirstOrDefault(ur => ur.RoleId == roleId);
+            if (userRole != null)
             {
+                userRoles.Remove(userRole);
                 AddDomainEvent(new UserRoleRemovedEvent(this.Id, roleId));
             }
         }

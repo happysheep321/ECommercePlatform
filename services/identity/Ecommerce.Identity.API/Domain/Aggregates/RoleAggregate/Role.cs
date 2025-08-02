@@ -1,7 +1,5 @@
 using Ecommerce.Identity.API.Domain.Aggregates.PermissionAggregate;
 using Ecommerce.SharedKernel.Base;
-using Ecommerce.SharedKernel.Interfaces;
-using Ecommerce.SharedKernel.Events;
 using Ecommerce.Identity.API.Domain.Events;
 
 namespace Ecommerce.Identity.API.Domain.Aggregates.RoleAggregate
@@ -25,9 +23,9 @@ namespace Ecommerce.Identity.API.Domain.Aggregates.RoleAggregate
         /// </summary>
         public bool IsSystemRole { get; private set; } = false;
 
-        private readonly HashSet<RolePermission> rolePermissions = new();
+        private readonly List<RolePermission> rolePermissions = new();
 
-        public IReadOnlyCollection<RolePermission> RolePermissions => rolePermissions;
+        public IReadOnlyCollection<RolePermission> RolePermissions => rolePermissions.AsReadOnly();
 
         /// <summary>
         /// EF Core无参构造函数
@@ -51,7 +49,6 @@ namespace Ecommerce.Identity.API.Domain.Aggregates.RoleAggregate
             Description = description;
             IsSystemRole = isSystemRole;
             Enabled = true;
-            rolePermissions = new HashSet<RolePermission>();
         }
 
         public void Enable()=>Enabled=true;
@@ -63,8 +60,10 @@ namespace Ecommerce.Identity.API.Domain.Aggregates.RoleAggregate
             if (permission == null)
                 throw new ArgumentNullException(nameof(permission));
             var rolePermission = new RolePermission(this.Id, permission.Id);
-            if (!rolePermissions.Add(rolePermission))
+            if (rolePermissions.Contains(rolePermission))
                 return false;
+
+            rolePermissions.Add(rolePermission);
             AddDomainEvent(new RolePermissionGrantedEvent(this.Id, permission.Id));
             return true;
         }
@@ -82,9 +81,20 @@ namespace Ecommerce.Identity.API.Domain.Aggregates.RoleAggregate
 
         public void ReplacePermissions(IEnumerable<Permission> newPermissions)
         {
-            rolePermissions.Clear();
+            var distinctNewPermissions = newPermissions.DistinctBy(p => p.Id).ToList();
 
-            foreach(var permission in newPermissions.DistinctBy(p => p.Id))
+            // 先找出需要移除的旧权限
+            var oldPermissions = rolePermissions
+                .Where(rp => !distinctNewPermissions.Any(np => np.Id == rp.PermissionId))
+                .ToList();
+
+            foreach (var oldPermission in oldPermissions)
+            {
+                RemovePermission(oldPermission.PermissionId);
+            }
+
+            // 再添加新的权限
+            foreach (var permission in distinctNewPermissions)
             {
                 AddPermission(permission);
             }

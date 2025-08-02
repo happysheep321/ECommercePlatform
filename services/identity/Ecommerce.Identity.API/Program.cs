@@ -3,15 +3,23 @@ using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.ConfigureIdentityServices();
-builder.Services.AddDomainEventHandlers();
+// 配置 Serilog
+Log.Logger = new LoggerConfiguration()
+    .ReadFrom.Configuration(builder.Configuration)
+    .Enrich.FromLogContext()
+    .WriteTo.Console()
+    .CreateLogger();
+
+builder.Host.UseSerilog();
+
+// 一行加载 Identity 所有模块
+builder.Services.AddIdentityModule(builder.Configuration, builder.Environment);
 
 var app = builder.Build();
 
-// Print service name on startup
-Log.Information("----------启动 Identity 微服务----------");
+Log.Information("---------- 启动 Identity 微服务 ----------");
 
-// Configure the HTTP request pipeline.
+// Swagger 仅在开发环境开启
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -21,7 +29,7 @@ if (app.Environment.IsDevelopment())
 app.UseAuthentication();
 app.UseAuthorization();
 
-// Middleware to block direct access; requests must come through the gateway
+// 网关访问限制中间件
 app.Use(async (context, next) =>
 {
     if (!context.Request.Headers.TryGetValue("X-Gateway-Auth", out var header) || header != "true")
@@ -30,10 +38,8 @@ app.Use(async (context, next) =>
         await context.Response.WriteAsync("Forbidden: Must access via gateway.");
         return;
     }
-
     await next();
 });
 
 app.MapControllers();
-
 app.Run();

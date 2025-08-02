@@ -1,7 +1,7 @@
 using System.Threading.Tasks;
 using Ecommerce.SharedKernel.Events;
 
-namespace Ecommerce.SharedKernel.Interfaces
+namespace ECommerce.SharedKernel.Events
 {
     public interface IDomainEventDispatcher
     {

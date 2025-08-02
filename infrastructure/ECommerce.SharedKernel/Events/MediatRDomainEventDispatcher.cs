@@ -1,9 +1,9 @@
 using System.Threading.Tasks;
 using MediatR;
 using Ecommerce.SharedKernel.Events;
-using Ecommerce.SharedKernel.Interfaces;
+using ECommerce.SharedKernel.Events;
 
-namespace Ecommerce.Identity.API.Domain.Events
+namespace Ecommerce.SharedKernel.Events
 {
     public class MediatRDomainEventDispatcher : IDomainEventDispatcher
     {

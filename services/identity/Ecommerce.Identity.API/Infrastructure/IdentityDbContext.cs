@@ -3,8 +3,8 @@ using Ecommerce.Identity.API.Domain.Aggregates.RoleAggregate;
 using Ecommerce.Identity.API.Domain.Aggregates.UserAggregate;
 using Ecommerce.SharedKernel.Base;
 using Ecommerce.SharedKernel.Events;
-using Ecommerce.SharedKernel.Interfaces;
 using ECommerce.SharedKernel.Enums;
+using ECommerce.SharedKernel.Events;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Linq;
@@ -54,8 +54,6 @@ namespace Ecommerce.Identity.API.Infrastructure
             public DbSet<User> Users { get; set; }
 
             public DbSet<UserAddress> UserAddresses { get; set; }
-
-            public DbSet<UserLoginLog> UserLoginLogs { get; set; }
 
             public DbSet<UserRole> UserRoles { get; set; }
 

@@ -1,165 +1,145 @@
-using ECommerce.BuildingBlocks.Logging;
-using ECommerce.BuildingBolcks.Authentication;
 using Ecommerce.Identity.API.Application.Interfaces;
-using Ecommerce.Identity.API.Application.Services;
-using Ecommerce.Identity.API.Infrastructure;
-using Microsoft.EntityFrameworkCore;
-using FluentValidation;
-using System.Text;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.IdentityModel.Tokens;
-using Ecommerce.Identity.API.Domain.Repositories;
-using Ecommerce.Identity.API.Infrastructure.Repositories;
-using ECommerce.SharedKernel.Interfaces;
-using MediatR;
-using Ecommerce.Identity.API.Infrastructure.Behaviors;
-using Ecommerce.Identity.API.Application.Validators;
-using ECommerce.BuildingBolcks.Redis;
-using StackExchange.Redis;
 using Ecommerce.Identity.API.Application.Options;
+using Ecommerce.Identity.API.Application.Services;
+using Ecommerce.Identity.API.Application.Validators;
+using Ecommerce.Identity.API.Domain.Repositories;
+using Ecommerce.Identity.API.Infrastructure;
+using Ecommerce.Identity.API.Infrastructure.Behaviors;
+using Ecommerce.Identity.API.Infrastructure.Repositories;
+using Ecommerce.SharedKernel.Events;
+using ECommerce.BuildingBolcks.Authentication;
+using ECommerce.BuildingBolcks.Redis;
+using ECommerce.SharedKernel.Interfaces;
+using ECommerce.SharedKernel.Events;
+using FluentValidation;
+using MediatR;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.OpenApi.Models;
+using StackExchange.Redis;
+using System.Reflection;
+using Ecommerce.Identity.API.Domain.Events;
 
 namespace Ecommerce.Identity.API.Extensions
 {
     public static class ServiceExtensions
     {
-        public static void ConfigureIdentityServices(this WebApplicationBuilder builder)
+        /// <summary>
+        /// ◊¢≤· Identity Œ¢∑˛ŒÒÀ˘–Ëµƒ»´≤øƒ£øÈ
+        /// </summary>
+        public static IServiceCollection AddIdentityModule(
+            this IServiceCollection services,
+            IConfiguration config,
+            IWebHostEnvironment env)
         {
-            var services = builder.Services;
-            var config = builder.Configuration;
-            var env = builder.Environment;
-
-            services.AddInfrastructureServices();
-            services.AddRepositories();
-            services.AddDomainServices();
-            services.AddMediatRAndBehaviors();
-
-            services.AddDatabase(config);
-            services.AddJwtAuthentication(config);
-            services.AddCustomLogging(config, "Identity");
-
-            services.AddHttpContextAccessor();
-            services.AddControllers();
-            services.AddEndpointsApiExplorer();
-
-            services.AddSwaggerSecurity();
-        }
-
-        private static void AddInfrastructureServices(this IServiceCollection services)
-        {
+            // ===================== 1. ª˘¥°…Ë © & π§æﬂ =====================
             services.AddSingleton<JwtTokenGenerator>();
             services.AddScoped<IPasswordHasher, PasswordHasher>();
             services.AddScoped<IUnitOfWork, UnitOfWork>();
 
+            // Redis
             services.AddSingleton<IConnectionMultiplexer>(sp =>
             {
-                var configuration = sp.GetRequiredService<IConfiguration>().GetConnectionString("Redis");
-                return ConnectionMultiplexer.Connect(configuration!);
+                var redisConfig = config.GetConnectionString("Redis");
+                return ConnectionMultiplexer.Connect(redisConfig!);
             });
             services.AddScoped<IRedisHelper, RedisHelper>();
-        }
 
-        private static void AddRepositories(this IServiceCollection services)
-        {
+            // ===================== 2.  ˝æ›ø‚ =====================
+            services.AddDbContextPool<IdentityDbContext>(options =>
+                options.UseSqlServer(config.GetConnectionString("UserDb")));
+
+            // ===================== 3. Repository ≤„ =====================
             services.AddScoped<IUserRepository, UserRepository>();
             services.AddScoped<IRoleRepository, RoleRepository>();
             services.AddScoped<IPermissionRepository, PermissionRepository>();
-        }
 
-        private static void AddDomainServices(this IServiceCollection services)
-        {
+            // ===================== 4. Domain Service ≤„ =====================
+            services.Configure<EmailOptions>(config.GetSection("Email"));
             services.AddScoped<IUserService, UserService>();
-            services.Configure<EmailOptions>(services.BuildServiceProvider().GetRequiredService<IConfiguration>().GetSection("Email"));
-            services.AddScoped<IEmailSender,SmtpEmailSender>();
-            services.AddScoped<IVerificationCodeService,EmailVerificationService>();
-        }
+            services.AddScoped<IEmailSender, SmtpEmailSender>();
+            services.AddScoped<IVerificationCodeService, EmailVerificationService>();
 
-        private static void AddMediatRAndBehaviors(this IServiceCollection services)
-        {
+            // ===================== 5. Application ≤„ =====================
             services.AddMediatR(cfg =>
             {
-                cfg.RegisterServicesFromAssemblyContaining<IUserService>();
+                // ∫œ≤¢ Application ”Î Domain Event µƒ≥Ã–ÚºØ◊¢≤·
+                cfg.RegisterServicesFromAssemblies(
+                    typeof(IUserService).Assembly,
+                    typeof(UserRoleAssignedEvent).Assembly,
+                    typeof(UserRoleRemovedEvent).Assembly,
+                    typeof(RolePermissionGrantedEvent).Assembly,
+                    typeof(RolePermissionRevokedEvent).Assembly
+                );
             });
+
+            // Pipeline + —È÷§∆˜
             services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
             services.AddValidatorsFromAssemblyContaining<RegisterUserCommandValidator>();
             services.AddValidatorsFromAssemblyContaining<LoginUserCommandValidator>();
             services.AddValidatorsFromAssemblyContaining<AddUserAddressCommandValidator>();
             services.AddValidatorsFromAssemblyContaining<UpdateUserAddressCommandValidator>();
             services.AddValidatorsFromAssemblyContaining<UpdateUserProfileCommandValidator>();
-        }
 
-        private static void AddDatabase(this IServiceCollection services, IConfiguration config)
-        {
-            var connectionString = config.GetConnectionString("UserDb");
-            services.AddDbContextPool<IdentityDbContext>(options =>
-                options.UseSqlServer(connectionString));
-        }
+            // ===================== 6. Domain Event Dispatcher =====================
+            services.AddScoped<IDomainEventDispatcher, MediatRDomainEventDispatcher>();
 
-        private static void AddJwtAuthentication(this IServiceCollection services, IConfiguration config)
-        {
+            // ===================== 7. JWT »œ÷§ =====================
             services.Configure<JwtSettings>(config.GetSection("JwtSettings"));
+            var jwtSettings = config.GetSection("JwtSettings").Get<JwtSettings>()!;
+            var key = System.Text.Encoding.UTF8.GetBytes(jwtSettings.SecretKey);
 
-            var jwtSettings = config.GetSection("JwtSettings").Get<JwtSettings>();
-            var key = Encoding.UTF8.GetBytes(jwtSettings!.SecretKey);
-
-            services.AddAuthentication(options =>
-            {
-                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-            })
-            .AddJwtBearer(options =>
-            {
-                options.RequireHttpsMetadata=false; // ÂºÄÂèëÁéØÂ¢ÉÂèØ‰ª•ÂÖ≥Èó≠ HTTPS Ë¶ÅÊ±Ç
-                options.SaveToken = true;
-
-                options.TokenValidationParameters = new TokenValidationParameters
+            services.AddAuthentication("Bearer")
+                .AddJwtBearer("Bearer", options =>
                 {
-                    ValidateIssuer = true,
-                    ValidateAudience = true,
-                    ValidateLifetime = true,
-                    ValidateIssuerSigningKey = true,
-                    ValidIssuer = jwtSettings.Issuer,
-                    ValidAudience = jwtSettings.Audience,
-                    IssuerSigningKey = new SymmetricSecurityKey(key),
-                    ClockSkew=TimeSpan.Zero // ÂÖ≥Èó≠ÈªòËÆ§ÁöÑÊó∂Èó¥ÂÅèÁßªÔºåÈÅøÂÖç‰ª§ÁâåËøáÊúüÈóÆÈ¢ò
-                };
-            });
-        }
-
-        private static void AddSwaggerSecurity(this IServiceCollection services)
-        {
-            services.AddSwaggerGen(c =>
-            {
-                c.SwaggerDoc("v1", new() { Title = "Ecommerce.Identity.API", Version = "v1" });
-
-                c.AddSecurityDefinition("Bearer", new Microsoft.OpenApi.Models.OpenApiSecurityScheme
-                {
-                    Description = "ËæìÂÖ•Ê†ºÂºè: Bearer {token}",
-                    Name = "Authorization",
-                    In = Microsoft.OpenApi.Models.ParameterLocation.Header,
-                    Type = Microsoft.OpenApi.Models.SecuritySchemeType.ApiKey,
-                    Scheme = "Bearer"
+                    options.RequireHttpsMetadata = false;
+                    options.SaveToken = true;
+                    options.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
+                    {
+                        ValidateIssuer = true,
+                        ValidateAudience = true,
+                        ValidateLifetime = true,
+                        ValidateIssuerSigningKey = true,
+                        ValidIssuer = jwtSettings.Issuer,
+                        ValidAudience = jwtSettings.Audience,
+                        IssuerSigningKey = new Microsoft.IdentityModel.Tokens.SymmetricSecurityKey(key),
+                        ClockSkew = TimeSpan.Zero
+                    };
                 });
 
-                c.AddSecurityRequirement(new Microsoft.OpenApi.Models.OpenApiSecurityRequirement
+            // ===================== 8. Swagger =====================
+            services.AddSwaggerGen(c =>
+            {
+                c.SwaggerDoc("v1", new OpenApiInfo { Title = "Ecommerce.Identity.API", Version = "v1" });
+                c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+                {
+                    Description = " ‰»Î∏Ò Ω: Bearer {token}",
+                    Name = "Authorization",
+                    In = ParameterLocation.Header,
+                    Type = SecuritySchemeType.ApiKey,
+                    Scheme = "Bearer"
+                });
+                c.AddSecurityRequirement(new OpenApiSecurityRequirement
                 {
                     {
-                          new Microsoft.OpenApi.Models.OpenApiSecurityScheme
+                        new OpenApiSecurityScheme
                         {
-                            Reference = new Microsoft.OpenApi.Models.OpenApiReference
+                            Reference = new OpenApiReference
                             {
-                                Type = Microsoft.OpenApi.Models.ReferenceType.SecurityScheme,
+                                Type = ReferenceType.SecurityScheme,
                                 Id = "Bearer"
                             }
                         },
-                        Array.Empty<string>() // ËøôÈáåÂèØ‰ª•ÊåáÂÆöÈúÄË¶ÅÁöÑ‰ΩúÁî®ÂüüÔºåÂ¶ÇÊûúÊ≤°ÊúâÂàô‰º†Á©∫Êï∞ÁªÑ
+                        Array.Empty<string>()
                     }
                 });
             });
-        }
 
-        private static void AddCustomLogging(this IServiceCollection services, IConfiguration config, string serviceName)
-        {
-            SerilogConfiguration.ConfigureSerilog(config, serviceName);
+            // ===================== 9. ª˘¥° Controller & π§æﬂ =====================
+            services.AddControllers();
+            services.AddEndpointsApiExplorer();
+            services.AddHttpContextAccessor();
+
+            return services;
         }
     }
 }
