@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Cryptography.KeyDerivation;
 using System.Security.Cryptography;
 
-namespace ECommerce.BuildingBolcks.Authentication
+namespace ECommerce.BuildingBlocks.Authentication
 {
     public class PasswordHasher : IPasswordHasher
     {

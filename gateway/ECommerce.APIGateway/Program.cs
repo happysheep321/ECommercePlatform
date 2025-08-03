@@ -1,9 +1,11 @@
 ﻿using ECommerce.BuildingBlocks.Logging;
-using ECommerce.BuildingBolcks.Authentication;
+using ECommerce.BuildingBlocks.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Serilog;
 using System.Text;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.AspNetCore.Authorization;
+using ECommerce.BuildingBlocks.Authentication.Attributes;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -34,11 +36,19 @@ builder.Services.AddAuthentication(options =>
         };
     });
 
-builder.Services.AddAuthorizationBuilder()
-    .AddPolicy("ECommerceDefault", policy =>
+builder.Services.AddAuthorization(options =>
+{
+    // 这里不要写死策略名，而是通配所有权限
+    options.AddPolicy("*", policy =>
     {
+        // 默认策略可以要求认证用户
         policy.RequireAuthenticatedUser();
+        policy.Requirements.Add(new PermissionRequirement("*"));
     });
+});
+
+// 注册我们的自定义授权处理器
+builder.Services.AddSingleton<IAuthorizationHandler, PermissionAuthorizationHandler>();
 
 // Add services to the container.
 SerilogConfiguration.ConfigureSerilog(builder.Configuration, "Gateway");

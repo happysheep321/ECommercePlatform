@@ -16,6 +16,9 @@ namespace Ecommerce.Identity.API.Domain.Aggregates.RoleAggregate
         /// </summary>
         public string Description { get; set; } = default!;
 
+        /// <summary>
+        /// 是否可用
+        /// </summary>
         public bool Enabled { get; private set; }
 
         /// <summary>

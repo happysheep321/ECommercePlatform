@@ -1,4 +1,4 @@
-﻿namespace ECommerce.BuildingBolcks.Authentication
+﻿namespace ECommerce.BuildingBlocks.Authentication
 {
     public class JwtSettings
     {

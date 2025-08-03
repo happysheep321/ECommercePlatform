@@ -16,7 +16,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\infrastructure\ECommerce.BuildingBolcks\ECommerce.BuildingBolcks.csproj" />
+    <ProjectReference Include="..\..\..\infrastructure\ECommerce.BuildingBolcks\ECommerce.BuildingBlocks.csproj" />
     <ProjectReference Include="..\..\..\infrastructure\ECommerce.SharedKernel\ECommerce.SharedKernel.csproj" />
   </ItemGroup>
 

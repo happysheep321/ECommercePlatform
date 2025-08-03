@@ -41,7 +41,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ECommerce.Payment.API", "se
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ECommerce.Product.API", "services\product\ECommerce.Product.API\ECommerce.Product.API.csproj", "{8510454A-738E-4298-BD78-9476E7CE7BA7}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ECommerce.BuildingBolcks", "infrastructure\ECommerce.BuildingBolcks\ECommerce.BuildingBolcks.csproj", "{74FFB6E8-4AE8-4F50-928C-C52409028C8F}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ECommerce.BuildingBlocks", "infrastructure\ECommerce.BuildingBolcks\ECommerce.BuildingBlocks.csproj", "{74FFB6E8-4AE8-4F50-928C-C52409028C8F}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ECommerce.SharedKernel", "infrastructure\ECommerce.SharedKernel\ECommerce.SharedKernel.csproj", "{A0E8D9BF-95EE-4BDB-B6C6-C3A90B08F33C}"
 EndProject

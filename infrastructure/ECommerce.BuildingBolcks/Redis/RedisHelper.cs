@@ -1,7 +1,7 @@
 ﻿using StackExchange.Redis;
 using System.Text.Json;
 
-namespace ECommerce.BuildingBolcks.Redis
+namespace ECommerce.BuildingBlocks.Redis
 {
     public class RedisHelper:IRedisHelper
     {

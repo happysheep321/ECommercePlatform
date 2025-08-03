@@ -1,4 +1,5 @@
-﻿using Ecommerce.Identity.API.Domain.Aggregates.RoleAggregate;
+﻿using Ecommerce.Identity.API.Domain.Aggregates.PermissionAggregate;
+using Ecommerce.Identity.API.Domain.Aggregates.RoleAggregate;
 using Ecommerce.Identity.API.Domain.Repositories;
 using Microsoft.EntityFrameworkCore;
 
@@ -18,6 +19,13 @@ namespace Ecommerce.Identity.API.Infrastructure.Repositories
             return await this.context.Roles
                 .Include(r => r.RolePermissions)
                 .FirstOrDefaultAsync(r => r.Id == id);
+        }
+
+        public async Task<IReadOnlyList<Role>> GetByIdsAsync(IEnumerable<Guid> roleIds)
+        {
+            return await this.context.Roles
+                .Where(r=>roleIds.Contains(r.Id))
+                .ToListAsync();
         }
 
         public async Task<Role?> GetByNameAsync(string name)
@@ -40,6 +48,18 @@ namespace Ecommerce.Identity.API.Infrastructure.Repositories
         public void Delete(Role role)
         {
             this.context.Roles.Remove(role);
+        }
+
+        public async Task<IReadOnlyList<Permission>> GetPermissionsByRoleIdAsync(Guid roleId)
+        {
+            var permissionIds = await context.RolePermissions
+                .Where(rp => rp.RoleId == roleId)
+                .Select(rp => rp.PermissionId)
+                .ToListAsync();
+
+            return await context.Permissions
+                .Where(p => permissionIds.Contains(p.Id))
+                .ToListAsync();
         }
     }
 }

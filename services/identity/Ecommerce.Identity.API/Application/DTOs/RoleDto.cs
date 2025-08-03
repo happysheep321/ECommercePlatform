@@ -19,5 +19,15 @@
         /// 角色描述（可选）
         /// </summary>
         public string? Description { get; set; }
+
+        /// <summary>
+        /// 是否启用
+        /// </summary>
+        public bool IsEnabled { get; set; }
+
+        /// <summary>
+        /// 是否为系统内置角色（内置角色通常禁止删除和更名）
+        /// </summary>
+        public bool IsSystem { get; set; }
     }
 }

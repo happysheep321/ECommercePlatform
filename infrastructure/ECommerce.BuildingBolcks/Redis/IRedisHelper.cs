@@ -1,4 +1,4 @@
-﻿namespace ECommerce.BuildingBolcks.Redis
+﻿namespace ECommerce.BuildingBlocks.Redis
 {
     public interface IRedisHelper
     {

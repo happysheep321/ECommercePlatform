@@ -6,7 +6,7 @@ using System.Security.Cryptography;
 using System.Text;
 using ECommerce.SharedKernel.Enums;
 
-namespace ECommerce.BuildingBolcks.Authentication
+namespace ECommerce.BuildingBlocks.Authentication
 {
     public class JwtTokenGenerator
     {

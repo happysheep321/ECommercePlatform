@@ -1,18 +1,27 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Authorization;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ECommerce.BuildingBolcks.Authentication.Attributes
+namespace ECommerce.BuildingBlocks.Authentication.Attributes
 {
-    public class PermissionAttribute
+    [AttributeUsage(AttributeTargets.Method | AttributeTargets.Class, AllowMultiple = true, Inherited = true)]
+    public class PermissionAttribute : AuthorizeAttribute
     {
-        public string Code { get; set; }
+        /// <summary>
+        /// 权限编码
+        /// </summary>
+        public string PermissionCode { get; }
 
-        public PermissionAttribute(string code)
+
+        public PermissionAttribute(string permissionCode)
         {
-            Code=code;
+            PermissionCode = permissionCode;
+
+            // 用 policy 名称作为权限编码
+            Policy = permissionCode;
         }
     }
 }

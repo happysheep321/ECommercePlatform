@@ -4,8 +4,8 @@ using Ecommerce.Identity.API.Application.Interfaces;
 using Ecommerce.Identity.API.Domain.Aggregates.UserAggregate;
 using Ecommerce.Identity.API.Domain.Repositories;
 using Ecommerce.Identity.API.Domain.ValueObjects;
-using ECommerce.BuildingBolcks.Authentication;
-using ECommerce.BuildingBolcks.Redis;
+using ECommerce.BuildingBlocks.Authentication;
+using ECommerce.BuildingBlocks.Redis;
 using ECommerce.SharedKernel.Enums;
 using ECommerce.SharedKernel.Interfaces;
 using Serilog;
@@ -129,6 +129,11 @@ namespace Ecommerce.Identity.API.Application.Services
             {
                 throw new UnauthorizedAccessException("用户不存在");
             }
+
+            var roleIds = user.UserRoles.Select(ur => ur.RoleId).ToList();
+            var roles = await roleRepository.GetByIdsAsync(roleIds);
+            var roleMap = roles.ToDictionary(r => r.Id, r => r);
+
             return new UserProfileDto
             {
                 UserId = userId,
@@ -148,12 +153,19 @@ namespace Ecommerce.Identity.API.Application.Services
                     Detail = addr.Detail,
                     IsDefault = addr.IsDefault,
                 }).ToList(),
-                Roles = user.UserRoles.Select(ur => new RoleDto
+                Roles = user.UserRoles.Select(ur => 
                 {
-                    RoleId = ur.RoleId,
-                    Name = roleRepository.GetByIdAsync(ur.RoleId).Result?.Name ?? string.Empty,
-                    Description = roleRepository.GetByIdAsync(ur.RoleId).Result?.Description ?? string.Empty,
-                }).ToList(),
+                    var role = roleMap[ur.RoleId];
+
+                    return new RoleDto
+                    {
+                        RoleId = role.Id,
+                        Name = role.Name ?? string.Empty,
+                        Description = role.Description ?? string.Empty,
+                        IsEnabled = role.Enabled,
+                        IsSystem = role.IsSystemRole
+                    };
+                }).ToList()
             };
         }
 

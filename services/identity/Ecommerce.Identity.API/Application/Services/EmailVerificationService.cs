@@ -1,5 +1,5 @@
 ﻿using Ecommerce.Identity.API.Application.Interfaces;
-using ECommerce.BuildingBolcks.Redis;
+using ECommerce.BuildingBlocks.Redis;
 using System.CodeDom.Compiler;
 using System.Text;
 
