@@ -45,5 +45,11 @@ namespace Ecommerce.Identity.API.Domain.Aggregates.PermissionAggregate
         public void Enable() => Enabled = true;
 
         public void Disable() => Enabled = false;
+
+        public void Update(string? displayName, string? description)
+        {
+            DisplayName = displayName;
+            Description = description;
+        }
     }
 }

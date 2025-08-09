@@ -35,6 +35,14 @@ namespace Ecommerce.Identity.API.Infrastructure.Repositories
                 .FirstOrDefaultAsync(r => r.Name == name);
         }
 
+        public async Task<List<Role>> GetAllAsync()
+        {
+            return await this.context.Roles
+                .AsNoTracking()
+                .OrderBy(r=>r.Name)
+                .ToListAsync();
+        }
+
         public async Task AddAsync(Role role)
         {
             await this.context.Roles.AddAsync(role);
@@ -60,6 +68,11 @@ namespace Ecommerce.Identity.API.Infrastructure.Repositories
             return await context.Permissions
                 .Where(p => permissionIds.Contains(p.Id))
                 .ToListAsync();
+        }
+
+        public async Task<bool> ExistsByNameAsync(string Name)
+        {
+            return await this.context.Roles.AnyAsync(r => r.Name == Name);
         }
     }
 }

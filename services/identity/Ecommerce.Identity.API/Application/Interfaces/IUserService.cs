@@ -27,6 +27,12 @@ namespace Ecommerce.Identity.API.Application.Interfaces
         Task AssignRoleAsync(Guid userId, Guid roleId);
         Task RemoveRoleAsync(Guid userId, Guid roleId);
 
+        // 用户状态管理
+        Task ActivateAsync(ActivateUserCommand command);
+        Task BanAsync(BanUserCommand command);
+        Task FreezeAsync(FreezeUserCommand command);
+        Task DeleteAsync(DeleteUserCommand command);
+
         //// 通知订阅
         //Task SubscribeAsync(Guid userId);
         //Task UnsubscribeAsync(Guid userId);

@@ -314,5 +314,38 @@ namespace Ecommerce.Identity.API.Application.Services
             userRepository.Update(user);
             await unitOfWork.SaveChangesAsync();
         }
+
+        // ===== 用户状态管理 =====
+        public async Task ActivateAsync(ActivateUserCommand command)
+        {
+            var user = await userRepository.GetByIdAsync(command.UserId) ?? throw new InvalidOperationException("用户不存在");
+            user.Activate();
+            userRepository.Update(user);
+            await unitOfWork.SaveChangesAsync();
+        }
+
+        public async Task BanAsync(BanUserCommand command)
+        {
+            var user = await userRepository.GetByIdAsync(command.UserId) ?? throw new InvalidOperationException("用户不存在");
+            user.Ban(command.Reason);
+            userRepository.Update(user);
+            await unitOfWork.SaveChangesAsync();
+        }
+
+        public async Task FreezeAsync(FreezeUserCommand command)
+        {
+            var user = await userRepository.GetByIdAsync(command.UserId) ?? throw new InvalidOperationException("用户不存在");
+            user.Freeze(command.Reason);
+            userRepository.Update(user);
+            await unitOfWork.SaveChangesAsync();
+        }
+
+        public async Task DeleteAsync(DeleteUserCommand command)
+        {
+            var user = await userRepository.GetByIdAsync(command.UserId) ?? throw new InvalidOperationException("用户不存在");
+            user.Delete();
+            userRepository.Update(user);
+            await unitOfWork.SaveChangesAsync();
+        }
     }
 }

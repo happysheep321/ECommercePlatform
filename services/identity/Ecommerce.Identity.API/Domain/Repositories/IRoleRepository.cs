@@ -8,6 +8,8 @@ namespace Ecommerce.Identity.API.Domain.Repositories
         Task<Role?> GetByIdAsync(Guid id);
         Task<IReadOnlyList<Role>> GetByIdsAsync(IEnumerable<Guid> roleIds);
         Task<Role?> GetByNameAsync(string name);
+        Task<List<Role>> GetAllAsync();
+        Task<bool> ExistsByNameAsync(string name);
         Task AddAsync(Role role);
         void Update(Role role);
         void Delete(Role role);

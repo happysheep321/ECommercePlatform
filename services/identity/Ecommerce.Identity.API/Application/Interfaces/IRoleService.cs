@@ -19,5 +19,9 @@ namespace Ecommerce.Identity.API.Application.Interfaces
         Task AssignPermissionsToRoleAsync(Guid roleId, List<Guid> permissionIds);
         Task RemovePermissionFromRoleAsync(Guid roleId, Guid permissionId);
         Task<IReadOnlyList<PermissionDto>> GetPermissionsByRoleIdAsync(Guid roleId);
+
+        // 角色状态
+        Task EnableAsync(EnableRoleCommand command);
+        Task DisableAsync(DisableRoleCommand command);
     }
 }

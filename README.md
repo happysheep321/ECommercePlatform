@@ -1,11 +1,28 @@
 # 🛒 ECommerce 微服务系统
 
-> 基于 **.NET 8** 和 **DDD（领域驱动设计）** 构建的电商微服务系统，采用 **YARP API 网关** 架构，支持高可用、高扩展的服务部署与治理。
+基于 **.NET 8** 与 **DDD（领域驱动设计）** 的微服务电商平台，统一接入 **YARP API Gateway**，实现认证鉴权、服务治理与横向扩展。面向学习与实践微服务架构的 .NET 开发者。
 
 [![.NET](https://img.shields.io/badge/.NET-8.0-blue.svg)](https://dotnet.microsoft.com/download/dotnet/8.0)
 [![C#](https://img.shields.io/badge/C%23-12.0-green.svg)](https://docs.microsoft.com/en-us/dotnet/csharp/)
 [![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Architecture](https://img.shields.io/badge/Architecture-DDD-orange.svg)](https://martinfowler.com/bliki/DomainDrivenDesign.html)
+[![Repo](https://img.shields.io/badge/GitHub-happysheep321%2FECommercePlatform-black?logo=github)](https://github.com/happysheep321/ECommercePlatform)
+
+---
+
+## 📑 目录
+
+- [项目特色](#-项目特色)
+- [项目结构](#-项目结构概览)
+- [技术栈](#-技术架构)
+- [快速启动](#-快速启动)
+- [配置说明](#-配置说明)
+- [API 规范](#-api-规范)
+- [开发指南](#-开发指南)
+- [文档导航](#-文档导航)
+- [贡献指南](#-贡献指南)
+- [License](#-许可证)
+
 
 ---
 

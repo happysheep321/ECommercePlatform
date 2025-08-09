@@ -36,13 +36,13 @@ namespace Ecommerce.Identity.API.Domain.Aggregates.RoleAggregate
         protected Role() { }
 
         /// <summary>
-        /// 领域构造函数
+        /// 领域构造函数（只有内部和工厂方法能调用）
         /// </summary>
         /// <param name="id">角色ID</param>
         /// <param name="name">角色名</param>
         /// <param name="description">角色描述</param>
         /// <param name="isSystemRole">是否为系统角色</param>
-        public Role(Guid id, string name, string description, bool isSystemRole = false)
+        protected Role(Guid id, string name, string description, bool isSystemRole = false)
         {
             if(string.IsNullOrWhiteSpace(name)) 
                 throw new ArgumentNullException("角色名称不能为空",nameof(name));
@@ -52,6 +52,20 @@ namespace Ecommerce.Identity.API.Domain.Aggregates.RoleAggregate
             Description = description;
             IsSystemRole = isSystemRole;
             Enabled = true;
+        }
+
+        // 公共构造函数，只能创建普通角色
+        public Role(Guid id, string name, string description)
+            : this(id, name, description, false)
+        {
+        }
+
+        public void UpdateRole(string name, string description)
+        {
+            if (IsSystemRole) throw new InvalidOperationException("系统内置角色不可修改");
+            if (string.IsNullOrWhiteSpace(name)) throw new ArgumentException("角色名称不能为空", nameof(name));
+            Name = name.Trim();
+            Description = description?.Trim() ?? string.Empty;
         }
 
         public void Enable()=>Enabled=true;

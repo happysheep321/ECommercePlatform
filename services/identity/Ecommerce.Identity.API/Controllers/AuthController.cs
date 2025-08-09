@@ -29,26 +29,13 @@ namespace ECommerce.Identity.API.Controllers
         /// <returns>用户Id</returns>
         [HttpPost("register")]
         [AllowAnonymous]
-        [ProducesResponseType(typeof(Guid),StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(Guid),StatusCodes.Status201Created)]
         [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<Guid>> RegisterAsync([FromBody]RegisterUserCommand command)
+        public async Task<ActionResult<ECommerce.SharedKernel.DTOs.ApiResponse<Guid>>> RegisterAsync([FromBody]RegisterUserCommand command)
         {
-            try
-            {
-                var userId = await userService.RegisterAsync(command);
-                return Ok(userId);
-            }
-            catch (ArgumentException ex) // 参数问题
-            {
-                logger.LogWarning(ex, "注册参数无效");
-                return BadRequest(ex.Message);
-            }
-            catch (Exception ex)
-            {
-                logger.LogError(ex, "用户注册失败");
-                return StatusCode(StatusCodes.Status500InternalServerError, "服务器内部错误");
-            }
+            var userId = await userService.RegisterAsync(command);
+            return StatusCode(StatusCodes.Status201Created, ECommerce.SharedKernel.DTOs.ApiResponse<Guid>.Ok(userId, "Created"));
         }
 
         /// <summary>
@@ -62,28 +49,10 @@ namespace ECommerce.Identity.API.Controllers
         [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(string), StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<LoginResultDto>> LoginAsync([FromBody]LoginUserCommand command)
+        public async Task<ActionResult<ECommerce.SharedKernel.DTOs.ApiResponse<LoginResultDto>>> LoginAsync([FromBody]LoginUserCommand command)
         {
-            try
-            {
-                var result = await userService.LoginAsync(command);
-                if (result == null)
-                {
-                    return Unauthorized("用户名或密码错误");
-                }
-
-                return Ok(result);
-            }
-            catch (UnauthorizedAccessException ex)
-            {
-                logger.LogWarning(ex, "未授权的登录尝试");
-                return Unauthorized(ex.Message);
-            }
-            catch (Exception ex)
-            {
-                logger.LogError(ex, "用户登录失败");
-                return StatusCode(StatusCodes.Status500InternalServerError, "服务器内部错误");
-            }
+            var result = await userService.LoginAsync(command);
+            return Ok(ECommerce.SharedKernel.DTOs.ApiResponse<LoginResultDto>.Ok(result));
         }
 
         [HttpPost("forgot-password")]
@@ -92,16 +61,8 @@ namespace ECommerce.Identity.API.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordCommand command)
         {
-            try
-            {
-                await userService.ResetPasswordByEmailAsync(command);
-                return Ok("密码重置成功");
-            }
-            catch (Exception ex)
-            {
-                logger.LogError(ex, "密码重置失败：{Message}", ex.Message);
-                return StatusCode(500, $"服务器内部错误：{ex.Message}");
-            }
+            await userService.ResetPasswordByEmailAsync(command);
+            return Ok(ECommerce.SharedKernel.DTOs.ApiResponse<string>.Ok("OK", "密码重置成功"));
         }
 
         [HttpPost("send-code")]
@@ -111,28 +72,12 @@ namespace ECommerce.Identity.API.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> SendEmailCode([FromBody] EmailCodeCommand command)
         {
-            try
+            var success = await emailVerificationService.SendCodeAsync(command.Email);
+            if (!success)
             {
-                var success = await emailVerificationService.SendCodeAsync(command.Email);
-                if (!success)
-                {
-                    var msg = $"验证码发送失败，目标邮箱：{command.Email}";
-                    logger.LogWarning(msg);
-                    return StatusCode(500, msg);
-                }
-
-                return Ok("验证码已发送");
+                return StatusCode(500, ECommerce.SharedKernel.DTOs.ApiResponse<string>.Fail("MAIL_SEND_FAILED", $"验证码发送失败，{command.Email}"));
             }
-            catch (SmtpException ex)
-            {
-                logger.LogError(ex, "SMTP 邮件服务异常");
-                return StatusCode(500, "邮件服务器异常，请稍后再试");
-            }
-            catch (Exception ex)
-            {
-                logger.LogError(ex, "发送验证码失败：{Message}", ex.Message);
-                return StatusCode(500, $"服务器内部错误：{ex.Message}");
-            }
+            return Ok(ECommerce.SharedKernel.DTOs.ApiResponse<string>.Ok("OK", "验证码已发送"));
         }
     }
 }

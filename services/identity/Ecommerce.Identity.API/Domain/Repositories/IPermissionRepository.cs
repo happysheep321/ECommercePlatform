@@ -6,5 +6,6 @@ namespace Ecommerce.Identity.API.Domain.Repositories
     {
         Task<Permission?> GetByIdAsync(Guid id);
         Task<IEnumerable<Permission>> GetAllAsync();
+        Task<List<Permission>> GetDefaultPermissionsAsync();
     }
 }

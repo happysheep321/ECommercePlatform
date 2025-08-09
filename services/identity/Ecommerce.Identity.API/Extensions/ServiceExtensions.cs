@@ -71,6 +71,7 @@ namespace Ecommerce.Identity.API.Extensions
             // ===================== 5. Domain Service 层 =====================
             services.Configure<EmailOptions>(config.GetSection("Email"));
             services.AddScoped<IUserService, UserService>();
+            services.AddScoped<IRoleService, RoleService>();
             services.AddScoped<IEmailSender, SmtpEmailSender>();
             services.AddScoped<IVerificationCodeService, EmailVerificationService>();
 

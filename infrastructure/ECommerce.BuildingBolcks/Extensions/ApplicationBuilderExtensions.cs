@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Hosting;
 using Microsoft.AspNetCore.Http;
+using ECommerce.BuildingBlocks.Middlewares;
 
 namespace ECommerce.BuildingBlocks.Extensions
 {
@@ -21,6 +22,9 @@ namespace ECommerce.BuildingBlocks.Extensions
             bool enableAuthorization = true)
         {
             app.UseRouting();
+
+            // 全局异常统一返回
+            app.UseGlobalException();
 
             if (enableAuthentication)
             {

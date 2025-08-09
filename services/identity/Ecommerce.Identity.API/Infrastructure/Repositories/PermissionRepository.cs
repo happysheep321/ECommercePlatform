@@ -1,5 +1,6 @@
 ﻿using Ecommerce.Identity.API.Domain.Aggregates.PermissionAggregate;
 using Ecommerce.Identity.API.Domain.Repositories;
+using ECommerce.SharedKernel.Constants;
 using Microsoft.EntityFrameworkCore;
 
 namespace Ecommerce.Identity.API.Infrastructure.Repositories
@@ -24,6 +25,18 @@ namespace Ecommerce.Identity.API.Infrastructure.Repositories
                 .AsNoTracking()
                 .OrderBy(p=>p.Name)
                 .ToListAsync();
+        }
+
+        public async Task<List<Permission>> GetDefaultPermissionsAsync()
+        {
+            var defaultPermissionNames = new List<string>()
+            {
+                PermissionNames.UserView,
+                PermissionNames.RoleView,
+                PermissionNames.ProductView
+            };
+
+            return await this.context.Permissions.Where(p=>defaultPermissionNames.Contains(p.Name!)).ToListAsync();
         }
     }
 }

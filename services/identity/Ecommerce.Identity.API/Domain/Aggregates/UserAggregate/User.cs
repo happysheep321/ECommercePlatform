@@ -2,11 +2,7 @@ using Ecommerce.Identity.API.Domain.Aggregates.RoleAggregate;
 using Ecommerce.Identity.API.Domain.Events;
 using Ecommerce.Identity.API.Domain.ValueObjects;
 using Ecommerce.SharedKernel.Base;
-using Ecommerce.SharedKernel.Interfaces;
 using ECommerce.SharedKernel.Enums;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace Ecommerce.Identity.API.Domain.Aggregates.UserAggregate
 {
@@ -53,6 +49,44 @@ namespace Ecommerce.Identity.API.Domain.Aggregates.UserAggregate
         public void UpdateProfile(UserProfile newProfile)
         {
             Profile = newProfile;
+        }
+
+        // ==== 用户核心状态/资料变更行为 ====
+        public void Activate()
+        {
+            if (Status == UserStatus.Deleted) throw new InvalidOperationException("已注销账号不可激活");
+            Status = UserStatus.Active;
+        }
+
+        public void Ban(string reason)
+        {
+            if (Status == UserStatus.Deleted) throw new InvalidOperationException("已注销账号不可封禁");
+            Status = UserStatus.Banned;
+        }
+
+        public void Freeze(string reason)
+        {
+            if (Status == UserStatus.Deleted) throw new InvalidOperationException("已注销账号不可冻结");
+            Status = UserStatus.Frozen;
+        }
+
+        public void Delete()
+        {
+            // 逻辑删除，不直接移除数据
+            Status = UserStatus.Deleted;
+        }
+
+        public void UpdateContact(string? email, string? phone)
+        {
+            if (!string.IsNullOrWhiteSpace(email)) Email = email.Trim();
+            if (!string.IsNullOrWhiteSpace(phone)) PhoneNumber = phone.Trim();
+        }
+
+        public void UpdatePasswordHash(string newPasswordHash)
+        {
+            if (string.IsNullOrWhiteSpace(newPasswordHash))
+                throw new ArgumentException("密码哈希不能为空", nameof(newPasswordHash));
+            PasswordHash = newPasswordHash;
         }
 
         // ==== 用户角色 ====
