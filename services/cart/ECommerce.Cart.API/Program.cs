@@ -1,31 +1,24 @@
-using ECommerce.BuildingBlocks.Logging;
+using ECommerce.BuildingBlocks.Extensions;
 using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-SerilogConfiguration.ConfigureSerilog(builder.Configuration, "Cart");
-builder.Host.UseSerilog();
+// ä½¿ç”¨é€šç”¨å¾®æœåŠ¡é…ç½®
+builder.Services.AddMicroserviceCommonServices(
+    configuration: builder.Configuration,
+    serviceName: "Cart",
+    swaggerTitle: "ECommerce.Cart.API",
+    enableJwtAuth: false,
+    enableRedis: false
+);
 
-builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Host.UseSerilog();
 
 var app = builder.Build();
 
-// Æô¶¯Ê±´òÓ¡·şÎñÃû
-Log.Information("----------Æô¶¯ Cart Î¢·şÎñ----------");
+Log.Information("----------å¯åŠ¨ Cart å¾®æœåŠ¡----------");
 
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
-
-app.UseAuthorization();
-
-app.MapControllers();
+// ä½¿ç”¨é€šç”¨å¾®æœåŠ¡ä¸­é—´ä»¶é…ç½®
+app.UseMicroserviceCommonMiddleware(builder.Environment);
 
 app.Run();
