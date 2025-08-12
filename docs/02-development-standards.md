@@ -1,4 +1,4 @@
-# 📝 开发规范与最佳实践
+# 📋 开发规范与最佳实践
 
 ## 🎯 编码规范
 
@@ -554,6 +554,115 @@ perf(cache): 改进缓存策略
 - [ ] 是否有安全隐患
 - [ ] 是否符合DDD架构原则
 - [ ] 文档是否完整
+
+## 🗄️ EF Core 迁移管理
+
+### 1. 迁移命名规范
+```bash
+# ✅ 推荐的命名方式
+dotnet ef migrations add AddUserProfileFields
+dotnet ef migrations add UpdateProductPricing
+dotnet ef migrations add CreateOrderTables
+
+# ❌ 不推荐的命名方式
+dotnet ef migrations add Migration1
+dotnet ef migrations add Update
+dotnet ef migrations add Fix
+```
+
+### 2. 迁移操作流程
+
+#### 开发阶段
+```bash
+# 1. 修改实体模型
+# 2. 检查当前迁移状态
+dotnet ef migrations list
+
+# 3. 创建迁移
+dotnet ef migrations add DescriptiveMigrationName
+
+# 4. 检查生成的迁移文件
+# 5. 更新数据库
+dotnet ef database update
+```
+
+#### 生产环境
+```bash
+# 1. 检查当前迁移状态
+dotnet ef migrations list
+
+# 2. 生成SQL脚本
+dotnet ef migrations script --output production-migration.sql
+
+# 3. 检查SQL脚本
+# 4. 在数据库中执行脚本
+```
+
+#### 撤销操作
+```bash
+# 1. 检查当前迁移状态
+dotnet ef migrations list
+
+# 2. 移除最后一个迁移（需要数据库连接）
+dotnet ef migrations remove
+```
+
+### 3. 使用PowerShell脚本
+
+#### 推荐执行顺序
+```powershell
+# 1. 检查当前状态
+.\scripts\ef-migrations.ps1 identity list
+
+# 2. 创建新迁移
+.\scripts\ef-migrations.ps1 identity add -MigrationName "AddUserProfileFields"
+
+# 3. 生成SQL脚本（可选，用于生产环境）
+.\scripts\ef-migrations.ps1 identity script -OutputPath "migration.sql"
+
+# 4. 更新数据库
+.\scripts\ef-migrations.ps1 identity update
+
+# 5. 移除迁移（如果需要撤销）
+.\scripts\ef-migrations.ps1 identity remove
+```
+
+#### 多服务迁移顺序
+```powershell
+# 建议按依赖关系顺序执行
+# 1. Identity服务（基础服务）
+.\scripts\ef-migrations.ps1 identity add -MigrationName "InitialIdentitySchema"
+
+# 2. Product服务（商品服务）
+.\scripts\ef-migrations.ps1 product add -MigrationName "InitialProductSchema"
+
+# 3. Cart服务（依赖Product）
+.\scripts\ef-migrations.ps1 cart add -MigrationName "InitialCartSchema"
+
+# 4. Order服务（依赖Product和Cart）
+.\scripts\ef-migrations.ps1 order add -MigrationName "InitialOrderSchema"
+```
+
+### 4. API接口管理
+每个微服务实现自己的迁移控制器，通过API接口管理迁移：
+
+```csharp
+[ApiController]
+[Route("api/[controller]")]
+[Authorize(Roles = "Admin")]
+public class MigrationController : ControllerBase
+{
+    private readonly IMigrationService _migrationService;
+    
+    [HttpPost("create")]
+    public async Task<IActionResult> CreateMigration([FromBody] CreateMigrationRequest request)
+    {
+        var projectPath = Directory.GetCurrentDirectory();
+        var result = await _migrationService.CreateMigrationAsync(request.MigrationName, projectPath);
+        // 处理结果...
+    }
+}
+```
 
 ---
 

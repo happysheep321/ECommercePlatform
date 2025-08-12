@@ -1,4 +1,8 @@
-分布式电商系统技术方案（E-Commerce Platform）
+# 🏗️ 系统架构设计文档
+
+## 项目概述
+
+**分布式电商系统技术方案（E-Commerce Platform）**
 
 ## 1. 项目背景与目标
 
@@ -20,11 +24,48 @@
 
 ### 2.1 分层架构（基于 DDD）
 
-- **表现层（Web & Gateway）**：前端商城（Vue SPA）、后台管理（MVC）、API Gateway。
-- **应用层（Application）**：业务流程编排，协调领域服务及外部依赖。
-- **领域层（Domain）**：聚合根、实体、值对象、领域服务、领域事件等核心建模。
-- **基础设施层（Infrastructure）**：集成 Redis、EF Core、RabbitMQ、ElasticSearch 等实现。
-- **接口层（API）**：RESTful API 服务接口。
+#### 架构层次
+```
+┌─────────────────────────────────────┐
+│          Presentation Layer         │  ← Controllers (API接口层)
+├─────────────────────────────────────┤
+│          Application Layer          │  ← Commands/Queries (应用层)
+├─────────────────────────────────────┤
+│            Domain Layer             │  ← Entities/ValueObjects (领域层)
+├─────────────────────────────────────┤
+│         Infrastructure Layer        │  ← Repositories/DbContext (基础设施层)
+└─────────────────────────────────────┘
+```
+
+#### 各层职责
+- **表现层（Web & Gateway）**：前端商城（Vue SPA）、后台管理（MVC）、API Gateway
+- **应用层（Application）**：业务流程编排，协调领域服务及外部依赖
+- **领域层（Domain）**：聚合根、实体、值对象、领域服务、领域事件等核心建模
+- **基础设施层（Infrastructure）**：集成 Redis、EF Core、RabbitMQ、ElasticSearch 等实现
+- **接口层（API）**：RESTful API 服务接口
+
+#### DDD核心概念
+- **聚合根（Aggregate Root）**：维护业务一致性的实体
+- **值对象（Value Object）**：通过属性值判断相等性的对象
+- **领域事件（Domain Event）**：业务状态变更时发布的事件
+- **限界上下文（Bounded Context）**：每个微服务都是一个独立的业务领域
+
+### 2.2 领域模型设计
+
+#### 微服务与聚合对应关系
+| 微服务名称 | 聚合根 | 主要实体 | 职责说明 |
+|-----------|--------|----------|----------|
+| **Identity** | User | User, Role, UserProfile, UserAddress | 用户认证、权限管理、地址管理 |
+| **Product** | Product | Product, SKU, Category, Brand | 商品管理、分类管理、品牌管理 |
+| **Cart** | Cart | Cart, CartItem | 购物车管理、商品项管理 |
+| **Order** | Order | Order, OrderItem, OrderLog | 订单管理、订单状态跟踪 |
+| **Payment** | Payment | Payment, PaymentStatus, RefundRecord | 支付处理、退款管理 |
+| **Inventory** | Inventory | Inventory, InventoryLog | 库存管理、库存变动跟踪 |
+
+#### 聚合设计原则
+- **单一职责**：每个聚合只负责一个业务概念
+- **一致性边界**：聚合内部保持强一致性，聚合间通过事件通信
+- **封装变化**：将可能变化的业务逻辑封装在聚合内部
 
 ---
 

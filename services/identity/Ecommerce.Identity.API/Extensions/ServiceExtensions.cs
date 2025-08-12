@@ -12,6 +12,7 @@ using ECommerce.BuildingBlocks.Redis;
 using ECommerce.SharedKernel.Interfaces;
 using ECommerce.SharedKernel.Events;
 using ECommerce.BuildingBlocks.Extensions;
+using ECommerce.BuildingBolcks.EFCore;
 using FluentValidation;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
@@ -80,6 +81,9 @@ namespace Ecommerce.Identity.API.Extensions
 
             // ===================== 7. Domain Event Dispatcher =====================
             services.AddScoped<IDomainEventDispatcher, MediatRDomainEventDispatcher>();
+
+            // ===================== 8. EF Core 迁移服务 =====================
+            services.AddEFCoreMigrationService();
 
             return services;
         }

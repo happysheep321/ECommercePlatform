@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Ecommerce.Identity.API.Migrations
 {
     [DbContext(typeof(IdentityDbContext))]
-    [Migration("20250629032813_FixUserLoginLogForeignKey")]
-    partial class FixUserLoginLogForeignKey
+    [Migration("20250812002825_InitialIdentitySchema")]
+    partial class InitialIdentitySchema
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -34,10 +34,23 @@ namespace Ecommerce.Identity.API.Migrations
                         .HasMaxLength(256)
                         .HasColumnType("nvarchar(256)");
 
+                    b.Property<string>("DisplayName")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<bool>("Enabled")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(true);
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
+
+                    b.Property<int>("Type")
+                        .HasColumnType("int");
 
                     b.HasKey("Id");
 
@@ -47,32 +60,47 @@ namespace Ecommerce.Identity.API.Migrations
                         new
                         {
                             Id = new Guid("aaaa1111-0000-0000-0000-000000000001"),
-                            Description = "查看用户",
-                            Name = "User.View"
+                            Description = "用户管理页面",
+                            DisplayName = "用户管理页面",
+                            Enabled = true,
+                            Name = "Page:User.View",
+                            Type = 1
+                        },
+                        new
+                        {
+                            Id = new Guid("aaaa1111-0000-0000-0000-000000000004"),
+                            Description = "订单管理页面",
+                            DisplayName = "订单管理页面",
+                            Enabled = true,
+                            Name = "Page:Order.View",
+                            Type = 1
                         },
                         new
                         {
                             Id = new Guid("aaaa1111-0000-0000-0000-000000000002"),
                             Description = "编辑用户",
-                            Name = "User.Edit"
+                            DisplayName = "编辑用户",
+                            Enabled = true,
+                            Name = "Permission:User.Edit",
+                            Type = 0
                         },
                         new
                         {
                             Id = new Guid("aaaa1111-0000-0000-0000-000000000003"),
                             Description = "删除用户",
-                            Name = "User.Delete"
-                        },
-                        new
-                        {
-                            Id = new Guid("aaaa1111-0000-0000-0000-000000000004"),
-                            Description = "查看订单",
-                            Name = "Order.View"
+                            DisplayName = "删除用户",
+                            Enabled = true,
+                            Name = "Permission:User.Delete",
+                            Type = 0
                         },
                         new
                         {
                             Id = new Guid("aaaa1111-0000-0000-0000-000000000005"),
                             Description = "管理订单",
-                            Name = "Order.Manage"
+                            DisplayName = "管理订单",
+                            Enabled = true,
+                            Name = "Permission:Order.Manage",
+                            Type = 0
                         });
                 });
 
@@ -82,8 +110,19 @@ namespace Ecommerce.Identity.API.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("Description")
+                        .IsRequired()
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
+
+                    b.Property<bool>("Enabled")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(true);
+
+                    b.Property<bool>("IsSystemRole")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(false);
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -99,24 +138,32 @@ namespace Ecommerce.Identity.API.Migrations
                         {
                             Id = new Guid("11111111-1111-1111-1111-111111111111"),
                             Description = "管理员",
+                            Enabled = true,
+                            IsSystemRole = true,
                             Name = "Admin"
                         },
                         new
                         {
                             Id = new Guid("22222222-2222-2222-2222-222222222222"),
                             Description = "卖家",
+                            Enabled = true,
+                            IsSystemRole = true,
                             Name = "Seller"
                         },
                         new
                         {
                             Id = new Guid("33333333-3333-3333-3333-333333333333"),
                             Description = "买家",
+                            Enabled = true,
+                            IsSystemRole = true,
                             Name = "Buyer"
                         },
                         new
                         {
                             Id = new Guid("44444444-4444-4444-4444-444444444444"),
                             Description = "访客",
+                            Enabled = true,
+                            IsSystemRole = true,
                             Name = "Guest"
                         });
                 });
@@ -130,8 +177,6 @@ namespace Ecommerce.Identity.API.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.HasKey("RoleId", "PermissionId");
-
-                    b.HasIndex("PermissionId");
 
                     b.ToTable("RolePermissions", (string)null);
 
@@ -180,6 +225,7 @@ namespace Ecommerce.Identity.API.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("Email")
+                        .IsRequired()
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
 
@@ -189,6 +235,7 @@ namespace Ecommerce.Identity.API.Migrations
                         .HasColumnType("nvarchar(256)");
 
                     b.Property<string>("PhoneNumber")
+                        .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
@@ -245,35 +292,6 @@ namespace Ecommerce.Identity.API.Migrations
                     b.ToTable("UserAddresses", (string)null);
                 });
 
-            modelBuilder.Entity("Ecommerce.Identity.API.Domain.Aggregates.UserAggregate.UserLoginLog", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("Device")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("IP")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<string>("Location")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("LoginTime")
-                        .HasColumnType("datetime2");
-
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("UserLoginLogs", (string)null);
-                });
-
             modelBuilder.Entity("Ecommerce.Identity.API.Domain.Aggregates.UserAggregate.UserRole", b =>
                 {
                     b.Property<Guid>("UserId")
@@ -284,28 +302,16 @@ namespace Ecommerce.Identity.API.Migrations
 
                     b.HasKey("UserId", "RoleId");
 
-                    b.HasIndex("RoleId");
-
                     b.ToTable("UserRoles", (string)null);
                 });
 
             modelBuilder.Entity("Ecommerce.Identity.API.Domain.Aggregates.RoleAggregate.RolePermission", b =>
                 {
-                    b.HasOne("Ecommerce.Identity.API.Domain.Aggregates.PermissionAggregate.Permission", "Permission")
-                        .WithMany()
-                        .HasForeignKey("PermissionId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Ecommerce.Identity.API.Domain.Aggregates.RoleAggregate.Role", "Role")
+                    b.HasOne("Ecommerce.Identity.API.Domain.Aggregates.RoleAggregate.Role", null)
                         .WithMany("RolePermissions")
                         .HasForeignKey("RoleId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("Permission");
-
-                    b.Navigation("Role");
                 });
 
             modelBuilder.Entity("Ecommerce.Identity.API.Domain.Aggregates.UserAggregate.User", b =>
@@ -343,7 +349,8 @@ namespace Ecommerce.Identity.API.Migrations
                                 .HasForeignKey("UserId");
                         });
 
-                    b.Navigation("Profile");
+                    b.Navigation("Profile")
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Ecommerce.Identity.API.Domain.Aggregates.UserAggregate.UserAddress", b =>
@@ -382,17 +389,7 @@ namespace Ecommerce.Identity.API.Migrations
                                 .HasForeignKey("UserAddressId");
                         });
 
-                    b.Navigation("Region");
-
-                    b.Navigation("User");
-                });
-
-            modelBuilder.Entity("Ecommerce.Identity.API.Domain.Aggregates.UserAggregate.UserLoginLog", b =>
-                {
-                    b.HasOne("Ecommerce.Identity.API.Domain.Aggregates.UserAggregate.User", "User")
-                        .WithMany("LoginLogs")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                    b.Navigation("Region")
                         .IsRequired();
 
                     b.Navigation("User");
@@ -400,21 +397,11 @@ namespace Ecommerce.Identity.API.Migrations
 
             modelBuilder.Entity("Ecommerce.Identity.API.Domain.Aggregates.UserAggregate.UserRole", b =>
                 {
-                    b.HasOne("Ecommerce.Identity.API.Domain.Aggregates.RoleAggregate.Role", "Role")
-                        .WithMany()
-                        .HasForeignKey("RoleId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Ecommerce.Identity.API.Domain.Aggregates.UserAggregate.User", "User")
+                    b.HasOne("Ecommerce.Identity.API.Domain.Aggregates.UserAggregate.User", null)
                         .WithMany("UserRoles")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("Role");
-
-                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("Ecommerce.Identity.API.Domain.Aggregates.RoleAggregate.Role", b =>
@@ -425,8 +412,6 @@ namespace Ecommerce.Identity.API.Migrations
             modelBuilder.Entity("Ecommerce.Identity.API.Domain.Aggregates.UserAggregate.User", b =>
                 {
                     b.Navigation("Addresses");
-
-                    b.Navigation("LoginLogs");
 
                     b.Navigation("UserRoles");
                 });

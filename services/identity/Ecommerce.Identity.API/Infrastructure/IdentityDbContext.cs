@@ -111,7 +111,7 @@ namespace Ecommerce.Identity.API.Infrastructure
                         Id = Guid.Parse("aaaa1111-0000-0000-0000-000000000001"),
                         Name = "Page:User.View",
                         DisplayName = "用户管理页面",
-                        Type = (int)PermissionType.Page, // 假设PermissionType是枚举，这里转换成int
+                        Type = PermissionType.Page,
                         Enabled = true,
                         Description = "用户管理页面"
                     },
@@ -120,7 +120,7 @@ namespace Ecommerce.Identity.API.Infrastructure
                         Id = Guid.Parse("aaaa1111-0000-0000-0000-000000000004"),
                         Name = "Page:Order.View",
                         DisplayName = "订单管理页面",
-                        Type = (int)PermissionType.Page,
+                        Type = PermissionType.Page,
                         Enabled = true,
                         Description = "订单管理页面"
                     },
@@ -129,7 +129,7 @@ namespace Ecommerce.Identity.API.Infrastructure
                         Id = Guid.Parse("aaaa1111-0000-0000-0000-000000000002"),
                         Name = "Permission:User.Edit",
                         DisplayName = "编辑用户",
-                        Type = (int)PermissionType.Function,
+                        Type = PermissionType.Function,
                         Enabled = true,
                         Description = "编辑用户"
                     },
@@ -138,7 +138,7 @@ namespace Ecommerce.Identity.API.Infrastructure
                         Id = Guid.Parse("aaaa1111-0000-0000-0000-000000000003"),
                         Name = "Permission:User.Delete",
                         DisplayName = "删除用户",
-                        Type = (int)PermissionType.Function,
+                        Type = PermissionType.Function,
                         Enabled = true,
                         Description = "删除用户"
                     },
@@ -147,7 +147,7 @@ namespace Ecommerce.Identity.API.Infrastructure
                         Id = Guid.Parse("aaaa1111-0000-0000-0000-000000000005"),
                         Name = "Permission:Order.Manage",
                         DisplayName = "管理订单",
-                        Type = (int)PermissionType.Function,
+                        Type = PermissionType.Function,
                         Enabled = true,
                         Description = "管理订单"
                     }
