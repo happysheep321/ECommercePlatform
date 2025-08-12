@@ -1,7 +1,7 @@
-﻿using Ecommerce.Identity.API.Domain.Events;
+﻿using ECommerce.Identity.API.Domain.Events;
 using MediatR;
 
-namespace Ecommerce.Identity.API.Application.EventHandlers
+namespace ECommerce.Identity.API.Application.EventHandlers
 {
     public class RolePermissionRevokedEventHandler : INotificationHandler<RolePermissionRevokedEvent>
     {

@@ -1,4 +1,4 @@
-﻿namespace Ecommerce.Identity.API.Domain.Aggregates.RoleAggregate
+﻿namespace ECommerce.Identity.API.Domain.Aggregates.RoleAggregate
 {
     public class RolePermission
     {

@@ -1,16 +1,16 @@
-﻿using Ecommerce.Identity.API.Application.Commands;
-using Ecommerce.Identity.API.Application.DTOs;
-using Ecommerce.Identity.API.Application.Interfaces;
-using Ecommerce.Identity.API.Domain.Aggregates.UserAggregate;
-using Ecommerce.Identity.API.Domain.Repositories;
-using Ecommerce.Identity.API.Domain.ValueObjects;
+﻿using ECommerce.Identity.API.Application.Commands;
+using ECommerce.Identity.API.Application.DTOs;
+using ECommerce.Identity.API.Application.Interfaces;
+using ECommerce.Identity.API.Domain.Aggregates.UserAggregate;
+using ECommerce.Identity.API.Domain.Repositories;
+using ECommerce.Identity.API.Domain.ValueObjects;
 using ECommerce.BuildingBlocks.Authentication;
 using ECommerce.BuildingBlocks.Redis;
 using ECommerce.SharedKernel.Enums;
 using ECommerce.SharedKernel.Interfaces;
 using Serilog;
 
-namespace Ecommerce.Identity.API.Application.Services
+namespace ECommerce.Identity.API.Application.Services
 {
     public class UserService:IUserService
     {

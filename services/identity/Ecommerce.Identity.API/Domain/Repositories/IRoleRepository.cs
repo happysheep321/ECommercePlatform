@@ -1,7 +1,7 @@
-﻿using Ecommerce.Identity.API.Domain.Aggregates.PermissionAggregate;
-using Ecommerce.Identity.API.Domain.Aggregates.RoleAggregate;
+﻿using ECommerce.Identity.API.Domain.Aggregates.PermissionAggregate;
+using ECommerce.Identity.API.Domain.Aggregates.RoleAggregate;
 
-namespace Ecommerce.Identity.API.Domain.Repositories
+namespace ECommerce.Identity.API.Domain.Repositories
 {
     public interface IRoleRepository
     {

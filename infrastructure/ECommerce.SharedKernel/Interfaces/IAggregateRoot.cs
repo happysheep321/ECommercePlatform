@@ -1,4 +1,4 @@
-﻿namespace Ecommerce.SharedKernel.Interfaces
+﻿namespace ECommerce.SharedKernel.Interfaces
 {
     public interface IAggregateRoot
     {

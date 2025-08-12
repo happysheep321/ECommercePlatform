@@ -1,6 +1,6 @@
-using Ecommerce.Identity.API.Domain.ValueObjects;
+using ECommerce.Identity.API.Domain.ValueObjects;
 
-namespace Ecommerce.Identity.API.Application.Commands
+namespace ECommerce.Identity.API.Application.Commands
 {
     public class UpdateUserAddressCommand
     {

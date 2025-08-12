@@ -1,4 +1,4 @@
-﻿namespace Ecommerce.Identity.API.Application.DTOs
+﻿namespace ECommerce.Identity.API.Application.DTOs
 {
     /// <summary>
     /// 权限信息 DTO

@@ -1,4 +1,4 @@
-﻿namespace Ecommerce.Identity.API.Application.Commands
+﻿namespace ECommerce.Identity.API.Application.Commands
 {
     /// <summary>
     /// 更新角色命令

@@ -25,7 +25,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "inventory", "inventory", "{
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ECommerce.APIGateway", "gateway\ECommerce.APIGateway\ECommerce.APIGateway.csproj", "{39BBF904-7B1E-4E49-A809-E7AE41647074}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ecommerce.Identity.API", "services\identity\Ecommerce.Identity.API\Ecommerce.Identity.API.csproj", "{199A71B0-4079-43D6-9A3D-3AEEDA57204B}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ECommerce.Identity.API", "services\identity\Ecommerce.Identity.API\ECommerce.Identity.API.csproj", "{199A71B0-4079-43D6-9A3D-3AEEDA57204B}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docs", "docs", "{AE1D9599-AD80-4254-84BF-C83476F496F7}"
 EndProject

@@ -1,8 +1,10 @@
-using ECommerce.BuildingBolcks.EFCore;
+﻿using ECommerce.BuildingBolcks.EFCore;
+using ECommerce.Identity.API.Application.Commands;
+using ECommerce.SharedKernel.DTOs;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Ecommerce.Identity.API.Controllers
+namespace ECommerce.Identity.API.Controllers
 {
     /// <summary>
     /// EF Core 迁移管理控制器
@@ -12,35 +14,43 @@ namespace Ecommerce.Identity.API.Controllers
     [Authorize(Roles = "Admin")] // 只允许管理员访问
     public class MigrationController : ControllerBase
     {
-        private readonly IMigrationService _migrationService;
-        private readonly ILogger<MigrationController> _logger;
+        private readonly IMigrationService migrationService;
+        private readonly ILogger<MigrationController> logger;
 
         public MigrationController(IMigrationService migrationService, ILogger<MigrationController> logger)
         {
-            _migrationService = migrationService;
-            _logger = logger;
+            this.migrationService = migrationService;
+            this.logger = logger;
         }
 
         /// <summary>
-        /// 创建新的迁移
+        /// 创建新的EF Core迁移
         /// </summary>
-        /// <param name="request">创建迁移请求</param>
+        /// <param name="command">创建迁移命令</param>
         /// <returns>操作结果</returns>
+        /// <remarks>
+        /// 创建新的EF Core数据库迁移文件
+        /// 
+        /// 示例请求:
+        /// ```json
+        /// {
+        ///   "migrationName": "AddUserTable"
+        /// }
+        /// ```
+        /// </remarks>
         [HttpPost("create")]
-        public async Task<IActionResult> CreateMigration([FromBody] CreateMigrationRequest request)
+        [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult<ApiResponse<object>>> CreateMigration([FromBody] CreateMigrationCommand command)
         {
             try
             {
-                if (string.IsNullOrEmpty(request.MigrationName))
-                {
-                    return BadRequest(new { message = "迁移名称不能为空" });
-                }
-
                 // 获取当前项目路径
                 var projectPath = Directory.GetCurrentDirectory();
                 
-                var result = await _migrationService.CreateMigrationAsync(
-                    request.MigrationName, 
+                var result = await migrationService.CreateMigrationAsync(
+                    command.MigrationName, 
                     projectPath);
 
                 if (result.Success)
@@ -62,7 +72,7 @@ namespace Ecommerce.Identity.API.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "创建迁移时发生异常");
+                logger.LogError(ex, "创建迁移时发生异常");
                 return StatusCode(500, new { 
                     success = false, 
                     message = "创建迁移时发生异常",
@@ -72,17 +82,22 @@ namespace Ecommerce.Identity.API.Controllers
         }
 
         /// <summary>
-        /// 更新数据库
+        /// 更新数据库到最新迁移
         /// </summary>
         /// <returns>操作结果</returns>
+        /// <remarks>
+        /// 将数据库更新到最新的EF Core迁移版本
+        /// </remarks>
         [HttpPost("update-database")]
-        public async Task<IActionResult> UpdateDatabase()
+        [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult<ApiResponse<object>>> UpdateDatabase()
         {
             try
             {
                 var projectPath = Directory.GetCurrentDirectory();
                 
-                var result = await _migrationService.UpdateDatabaseAsync(projectPath);
+                var result = await migrationService.UpdateDatabaseAsync(projectPath);
 
                 if (result.Success)
                 {
@@ -103,7 +118,7 @@ namespace Ecommerce.Identity.API.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "更新数据库时发生异常");
+                logger.LogError(ex, "更新数据库时发生异常");
                 return StatusCode(500, new { 
                     success = false, 
                     message = "更新数据库时发生异常",
@@ -116,14 +131,19 @@ namespace Ecommerce.Identity.API.Controllers
         /// 移除最后一个迁移
         /// </summary>
         /// <returns>操作结果</returns>
+        /// <remarks>
+        /// 移除最后一个EF Core迁移文件（如果尚未应用到数据库）
+        /// </remarks>
         [HttpPost("remove-last")]
-        public async Task<IActionResult> RemoveLastMigration()
+        [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult<ApiResponse<object>>> RemoveLastMigration()
         {
             try
             {
                 var projectPath = Directory.GetCurrentDirectory();
                 
-                var result = await _migrationService.RemoveLastMigrationAsync(projectPath);
+                var result = await migrationService.RemoveLastMigrationAsync(projectPath);
 
                 if (result.Success)
                 {
@@ -144,7 +164,7 @@ namespace Ecommerce.Identity.API.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "移除迁移时发生异常");
+                logger.LogError(ex, "移除迁移时发生异常");
                 return StatusCode(500, new { 
                     success = false, 
                     message = "移除迁移时发生异常",
@@ -154,21 +174,34 @@ namespace Ecommerce.Identity.API.Controllers
         }
 
         /// <summary>
-        /// 生成SQL脚本
+        /// 生成EF Core迁移SQL脚本
         /// </summary>
-        /// <param name="request">生成脚本请求</param>
+        /// <param name="command">生成脚本命令</param>
         /// <returns>操作结果</returns>
+        /// <remarks>
+        /// 生成EF Core迁移的SQL脚本，可选择输出到文件
+        /// 
+        /// 示例请求:
+        /// ```json
+        /// {
+        ///   "outputPath": "migration-script.sql"
+        /// }
+        /// ```
+        /// </remarks>
         [HttpPost("generate-script")]
-        public async Task<IActionResult> GenerateScript([FromBody] GenerateScriptRequest request)
+        [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult<ApiResponse<object>>> GenerateScript([FromBody] GenerateScriptCommand command)
         {
             try
             {
                 var projectPath = Directory.GetCurrentDirectory();
                 
-                var result = await _migrationService.GenerateScriptAsync(
+                var result = await migrationService.GenerateScriptAsync(
                     projectPath, 
                     null,
-                    request.OutputPath);
+                    command.OutputPath);
 
                 if (result.Success)
                 {
@@ -189,7 +222,7 @@ namespace Ecommerce.Identity.API.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "生成SQL脚本时发生异常");
+                logger.LogError(ex, "生成SQL脚本时发生异常");
                 return StatusCode(500, new { 
                     success = false, 
                     message = "生成SQL脚本时发生异常",
@@ -199,17 +232,22 @@ namespace Ecommerce.Identity.API.Controllers
         }
 
         /// <summary>
-        /// 列出所有迁移
+        /// 列出所有EF Core迁移
         /// </summary>
         /// <returns>迁移列表</returns>
+        /// <remarks>
+        /// 获取当前项目的所有EF Core迁移文件列表
+        /// </remarks>
         [HttpGet("list")]
-        public async Task<IActionResult> ListMigrations()
+        [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult<ApiResponse<object>>> ListMigrations()
         {
             try
             {
                 var projectPath = Directory.GetCurrentDirectory();
                 
-                var result = await _migrationService.ListMigrationsAsync(projectPath);
+                var result = await migrationService.ListMigrationsAsync(projectPath);
 
                 if (result.Success)
                 {
@@ -231,7 +269,7 @@ namespace Ecommerce.Identity.API.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "列出迁移时发生异常");
+                logger.LogError(ex, "列出迁移时发生异常");
                 return StatusCode(500, new { 
                     success = false, 
                     message = "列出迁移时发生异常",
@@ -241,18 +279,23 @@ namespace Ecommerce.Identity.API.Controllers
         }
 
         /// <summary>
-        /// 获取迁移状态信息
+        /// 获取EF Core迁移状态信息
         /// </summary>
         /// <returns>迁移状态</returns>
+        /// <remarks>
+        /// 获取当前项目的EF Core迁移状态，包括迁移总数和列表
+        /// </remarks>
         [HttpGet("status")]
-        public async Task<IActionResult> GetMigrationStatus()
+        [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult<ApiResponse<object>>> GetMigrationStatus()
         {
             try
             {
                 var projectPath = Directory.GetCurrentDirectory();
                 
                 // 获取迁移列表
-                var listResult = await _migrationService.ListMigrationsAsync(projectPath);
+                var listResult = await migrationService.ListMigrationsAsync(projectPath);
                 
                 var status = new
                 {
@@ -270,7 +313,7 @@ namespace Ecommerce.Identity.API.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "获取迁移状态时发生异常");
+                logger.LogError(ex, "获取迁移状态时发生异常");
                 return StatusCode(500, new { 
                     success = false, 
                     message = "获取迁移状态时发生异常",
@@ -278,27 +321,5 @@ namespace Ecommerce.Identity.API.Controllers
                 });
             }
         }
-    }
-
-    /// <summary>
-    /// 创建迁移请求
-    /// </summary>
-    public class CreateMigrationRequest
-    {
-        /// <summary>
-        /// 迁移名称
-        /// </summary>
-        public string MigrationName { get; set; } = string.Empty;
-    }
-
-    /// <summary>
-    /// 生成脚本请求
-    /// </summary>
-    public class GenerateScriptRequest
-    {
-        /// <summary>
-        /// 输出文件路径（可选）
-        /// </summary>
-        public string? OutputPath { get; set; }
     }
 }

@@ -1,9 +1,9 @@
 using System;
 using System.Collections.Generic;
-using Ecommerce.SharedKernel.Events;
-using Ecommerce.SharedKernel.Interfaces;
+using ECommerce.SharedKernel.Events;
+using ECommerce.SharedKernel.Interfaces;
 
-namespace Ecommerce.SharedKernel.Base
+namespace ECommerce.SharedKernel.Base
 {
     public abstract class EntityBase<TId> : Entity<TId>, IAggregateRoot
     {

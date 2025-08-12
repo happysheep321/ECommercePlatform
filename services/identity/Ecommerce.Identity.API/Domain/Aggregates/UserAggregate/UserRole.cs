@@ -1,4 +1,4 @@
-﻿namespace Ecommerce.Identity.API.Domain.Aggregates.UserAggregate
+﻿namespace ECommerce.Identity.API.Domain.Aggregates.UserAggregate
 {
     public class UserRole
     {

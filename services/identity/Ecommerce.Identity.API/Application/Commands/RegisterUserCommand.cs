@@ -1,6 +1,6 @@
 ﻿using ECommerce.SharedKernel.Enums;
 
-namespace Ecommerce.Identity.API.Application.Commands
+namespace ECommerce.Identity.API.Application.Commands
 {
     public class RegisterUserCommand
     {

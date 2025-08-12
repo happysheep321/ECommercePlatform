@@ -1,8 +1,8 @@
-﻿using Ecommerce.Identity.API.Domain.Aggregates.UserAggregate;
-using Ecommerce.Identity.API.Domain.Repositories;
+﻿using ECommerce.Identity.API.Domain.Aggregates.UserAggregate;
+using ECommerce.Identity.API.Domain.Repositories;
 using Microsoft.EntityFrameworkCore;
 
-namespace Ecommerce.Identity.API.Infrastructure.Repositories
+namespace ECommerce.Identity.API.Infrastructure.Repositories
 {
     public class UserRepository : IUserRepository
     {

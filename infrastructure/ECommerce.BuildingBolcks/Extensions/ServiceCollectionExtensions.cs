@@ -92,11 +92,33 @@ namespace ECommerce.BuildingBlocks.Extensions
         public static IServiceCollection AddSwaggerDocumentation(
             this IServiceCollection services,
             string title,
-            string version = "v1")
+            string version = "v1",
+            string? xmlDocumentPath = null)
         {
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc(version, new OpenApiInfo { Title = title, Version = version });
+                
+                // 添加XML注释支持
+                if (!string.IsNullOrEmpty(xmlDocumentPath))
+                {
+                    // 使用指定的XML文档路径
+                    if (File.Exists(xmlDocumentPath))
+                    {
+                        c.IncludeXmlComments(xmlDocumentPath);
+                    }
+                }
+                else
+                {
+                    // 尝试自动查找XML文档
+                    var xmlFile = $"{System.Reflection.Assembly.GetExecutingAssembly().GetName().Name}.xml";
+                    var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+                    if (File.Exists(xmlPath))
+                    {
+                        c.IncludeXmlComments(xmlPath);
+                    }
+                }
+                
                 c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
                 {
                     Description = "JWT Authorization header using the Bearer scheme",
@@ -219,7 +241,11 @@ namespace ECommerce.BuildingBlocks.Extensions
         {
             services.AddBaseWebServices();
             services.AddSerilogServices(configuration, serviceName);
-            services.AddSwaggerDocumentation(swaggerTitle);
+            
+            // 配置Swagger文档，包含XML注释支持
+            // 使用serviceName参数来查找XML文档文件
+            var xmlDocumentPath = Path.Combine(AppContext.BaseDirectory, $"{serviceName}.xml");
+            services.AddSwaggerDocumentation(swaggerTitle, xmlDocumentPath: xmlDocumentPath);
 
             if (enableJwtAuth)
             {

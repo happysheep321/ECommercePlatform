@@ -1,9 +1,9 @@
-﻿using Ecommerce.Identity.API.Application.Interfaces;
+﻿using ECommerce.Identity.API.Application.Interfaces;
 using ECommerce.BuildingBlocks.Redis;
 using System.CodeDom.Compiler;
 using System.Text;
 
-namespace Ecommerce.Identity.API.Application.Services
+namespace ECommerce.Identity.API.Application.Services
 {
     public class EmailVerificationService:IVerificationCodeService
     {

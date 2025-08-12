@@ -1,6 +1,6 @@
-using Ecommerce.Identity.API.Domain.ValueObjects;
+using ECommerce.Identity.API.Domain.ValueObjects;
 
-namespace Ecommerce.Identity.API.Application.DTOs
+namespace ECommerce.Identity.API.Application.DTOs
 {
     /// <summary>
     /// 用户地址 DTO，用于向前端返回用户地址信息

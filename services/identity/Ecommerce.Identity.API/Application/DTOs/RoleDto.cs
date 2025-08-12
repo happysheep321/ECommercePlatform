@@ -1,4 +1,4 @@
-﻿namespace Ecommerce.Identity.API.Application.DTOs
+﻿namespace ECommerce.Identity.API.Application.DTOs
 {
     /// <summary>
     /// 用户角色 DTO，用于返回角色基本信息

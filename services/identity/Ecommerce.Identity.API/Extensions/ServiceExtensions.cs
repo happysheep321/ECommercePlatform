@@ -1,24 +1,21 @@
-using Ecommerce.Identity.API.Application.Interfaces;
-using Ecommerce.Identity.API.Application.Options;
-using Ecommerce.Identity.API.Application.Services;
-using Ecommerce.Identity.API.Application.Validators;
-using Ecommerce.Identity.API.Domain.Repositories;
-using Ecommerce.Identity.API.Infrastructure;
-using Ecommerce.Identity.API.Infrastructure.Behaviors;
-using Ecommerce.Identity.API.Infrastructure.Repositories;
-using Ecommerce.SharedKernel.Events;
-using ECommerce.BuildingBlocks.Authentication;
-using ECommerce.BuildingBlocks.Redis;
-using ECommerce.SharedKernel.Interfaces;
+using ECommerce.Identity.API.Application.Interfaces;
+using ECommerce.Identity.API.Application.Options;
+using ECommerce.Identity.API.Application.Services;
+using ECommerce.Identity.API.Application.Validators;
+using ECommerce.Identity.API.Domain.Repositories;
+using ECommerce.Identity.API.Infrastructure;
+using ECommerce.Identity.API.Infrastructure.Behaviors;
+using ECommerce.Identity.API.Infrastructure.Repositories;
 using ECommerce.SharedKernel.Events;
+using ECommerce.BuildingBlocks.Authentication;
+using ECommerce.SharedKernel.Interfaces;
 using ECommerce.BuildingBlocks.Extensions;
 using ECommerce.BuildingBolcks.EFCore;
-using FluentValidation;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
-using Ecommerce.Identity.API.Domain.Events;
+using ECommerce.Identity.API.Domain.Events;
 
-namespace Ecommerce.Identity.API.Extensions
+namespace ECommerce.Identity.API.Extensions
 {
     public static class ServiceExtensions
     {
@@ -30,11 +27,11 @@ namespace Ecommerce.Identity.API.Extensions
             IConfiguration config,
             IWebHostEnvironment env)
         {
-            // ===================== 1. 通用微服务配置 =====================
+            // ===================== 1. 通用微服务配�?=====================
             services.AddMicroserviceCommonServices(
                 configuration: config,
-                serviceName: "Identity",
-                swaggerTitle: "Ecommerce.Identity.API",
+                serviceName: "ECommerce.Identity.API",
+                swaggerTitle: "ECommerce.Identity.API",
                 enableJwtAuth: true,
                 enableRedis: true,
                 mediatRAssemblies: new[]
@@ -60,16 +57,16 @@ namespace Ecommerce.Identity.API.Extensions
             services.AddScoped<IPasswordHasher, PasswordHasher>();
             services.AddScoped<IUnitOfWork, UnitOfWork>();
 
-            // ===================== 3. 数据库 =====================
-            services.AddDbContextPool<IdentityDbContext>(options =>
+            // ===================== 3. 数据�?=====================
+            services.AddDbContext<IdentityDbContext>(options =>
                 options.UseSqlServer(config.GetConnectionString("UserDb")));
 
-            // ===================== 4. Repository 层 =====================
+            // ===================== 4. Repository �?=====================
             services.AddScoped<IUserRepository, UserRepository>();
             services.AddScoped<IRoleRepository, RoleRepository>();
             services.AddScoped<IPermissionRepository, PermissionRepository>();
 
-            // ===================== 5. Domain Service 层 =====================
+            // ===================== 5. Domain Service �?=====================
             services.Configure<EmailOptions>(config.GetSection("Email"));
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<IRoleService, RoleService>();

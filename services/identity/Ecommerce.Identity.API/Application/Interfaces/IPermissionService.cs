@@ -1,7 +1,7 @@
-﻿using Ecommerce.Identity.API.Application.DTOs;
+﻿using ECommerce.Identity.API.Application.DTOs;
 using System.Threading.Tasks;
 
-namespace Ecommerce.Identity.API.Application.Interfaces
+namespace ECommerce.Identity.API.Application.Interfaces
 {
     public interface IPermissionService
     {

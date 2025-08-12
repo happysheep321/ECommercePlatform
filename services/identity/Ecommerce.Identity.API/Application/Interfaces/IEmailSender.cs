@@ -1,4 +1,4 @@
-﻿namespace Ecommerce.Identity.API.Application.Interfaces
+﻿namespace ECommerce.Identity.API.Application.Interfaces
 {
     public interface IEmailSender
     {

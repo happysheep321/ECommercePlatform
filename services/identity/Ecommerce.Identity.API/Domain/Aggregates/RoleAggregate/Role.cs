@@ -1,8 +1,8 @@
-using Ecommerce.Identity.API.Domain.Aggregates.PermissionAggregate;
-using Ecommerce.SharedKernel.Base;
-using Ecommerce.Identity.API.Domain.Events;
+using ECommerce.Identity.API.Domain.Aggregates.PermissionAggregate;
+using ECommerce.SharedKernel.Base;
+using ECommerce.Identity.API.Domain.Events;
 
-namespace Ecommerce.Identity.API.Domain.Aggregates.RoleAggregate
+namespace ECommerce.Identity.API.Domain.Aggregates.RoleAggregate
 {
     public class Role : EntityBase<Guid>
     {

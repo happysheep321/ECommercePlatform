@@ -1,6 +1,6 @@
-﻿using Ecommerce.Identity.API.Domain.Aggregates.UserAggregate;
+﻿using ECommerce.Identity.API.Domain.Aggregates.UserAggregate;
 
-namespace Ecommerce.Identity.API.Domain.Repositories
+namespace ECommerce.Identity.API.Domain.Repositories
 {
     public interface IUserRepository
     {

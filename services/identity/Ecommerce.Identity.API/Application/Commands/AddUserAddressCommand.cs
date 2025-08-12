@@ -1,7 +1,7 @@
-using Ecommerce.Identity.API.Domain.ValueObjects;
-using Ecommerce.SharedKernel.Base;
+using ECommerce.Identity.API.Domain.ValueObjects;
+using ECommerce.SharedKernel.Base;
 
-namespace Ecommerce.Identity.API.Application.Commands
+namespace ECommerce.Identity.API.Application.Commands
 {
     public class AddUserAddressCommand
     {

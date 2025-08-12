@@ -1,7 +1,7 @@
-using Ecommerce.Identity.API.Domain.ValueObjects;
-using Ecommerce.SharedKernel.Base;
+using ECommerce.Identity.API.Domain.ValueObjects;
+using ECommerce.SharedKernel.Base;
 
-namespace Ecommerce.Identity.API.Domain.Aggregates.UserAggregate
+namespace ECommerce.Identity.API.Domain.Aggregates.UserAggregate
 {
     public class UserAddress : EntityBase<Guid>
     {

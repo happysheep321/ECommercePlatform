@@ -1,8 +1,8 @@
-﻿using Ecommerce.Identity.API.Domain.Aggregates.UserAggregate;
+﻿using ECommerce.Identity.API.Domain.Aggregates.UserAggregate;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Microsoft.EntityFrameworkCore;
 
-namespace Ecommerce.Identity.API.Infrastructure.EntityConfigs
+namespace ECommerce.Identity.API.Infrastructure.EntityConfigs
 {
     public class UserRoleConfig : IEntityTypeConfiguration<UserRole>
     {

@@ -1,9 +1,9 @@
 using System.Threading;
 using System.Threading.Tasks;
 using MediatR;
-using Ecommerce.Identity.API.Domain.Events;
+using ECommerce.Identity.API.Domain.Events;
 
-namespace Ecommerce.Identity.API.Application.EventHandlers
+namespace ECommerce.Identity.API.Application.EventHandlers
 {
     public class UserRoleRemovedEventHandler : INotificationHandler<UserRoleRemovedEvent>
     {

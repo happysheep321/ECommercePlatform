@@ -1,10 +1,11 @@
-using Ecommerce.Identity.API.Application.Commands;
-using Ecommerce.Identity.API.Application.DTOs;
-using Ecommerce.Identity.API.Application.Interfaces;
+﻿using ECommerce.Identity.API.Application.Commands;
+using ECommerce.Identity.API.Application.DTOs;
+using ECommerce.Identity.API.Application.Interfaces;
+using ECommerce.SharedKernel.DTOs;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Ecommerce.Identity.API.Controllers
+namespace ECommerce.Identity.API.Controllers
 {
     [Authorize(Roles = "Admin")]
     [ApiController]
@@ -20,86 +21,219 @@ namespace Ecommerce.Identity.API.Controllers
             this.logger = logger;
         }
 
+        /// <summary>
+        /// 创建新角色
+        /// </summary>
+        /// <param name="command">创建角色指令</param>
+        /// <returns>新创建的角色ID</returns>
+        /// <remarks>
+        /// 创建一个新的角色，需要提供角色名称和描述
+        /// 
+        /// 示例请求:
+        /// ```json
+        /// {
+        ///   "name": "Editor",
+        ///   "displayName": "编辑员",
+        ///   "description": "内容编辑权限"
+        /// }
+        /// ```
+        /// </remarks>
         [HttpPost]
-        [ProducesResponseType(typeof(Guid), StatusCodes.Status200OK)]
-        public async Task<ActionResult<ECommerce.SharedKernel.DTOs.ApiResponse<Guid>>> CreateAsync([FromBody] CreateRoleCommand command)
+        [ProducesResponseType(typeof(ApiResponse<Guid>), StatusCodes.Status201Created)]
+        [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult<ApiResponse<Guid>>> CreateAsync([FromBody] CreateRoleCommand command)
         {
             var id = await roleService.CreateRoleAsync(command);
-            return Ok(ECommerce.SharedKernel.DTOs.ApiResponse<Guid>.Ok(id, "Created"));
+            return StatusCode(StatusCodes.Status201Created, ApiResponse<Guid>.Ok(id, "角色创建成功"));
         }
 
+        /// <summary>
+        /// 更新角色信息
+        /// </summary>
+        /// <param name="command">更新角色指令</param>
+        /// <returns>更新操作结果</returns>
+        /// <remarks>
+        /// 更新指定角色的基本信息，包括名称、显示名称和描述
+        /// 
+        /// 示例请求:
+        /// ```json
+        /// {
+        ///   "id": "role-id-here",
+        ///   "name": "Editor",
+        ///   "displayName": "高级编辑员",
+        ///   "description": "高级内容编辑权限"
+        /// }
+        /// ```
+        /// </remarks>
         [HttpPut]
-        [ProducesResponseType(StatusCodes.Status204NoContent)]
-        public async Task<IActionResult> UpdateAsync([FromBody] UpdateRoleCommand command)
+        [ProducesResponseType(typeof(ApiResponse<string>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult<ApiResponse<string>>> UpdateAsync([FromBody] UpdateRoleCommand command)
         {
             await roleService.UpdateRoleAsync(command);
-            return Ok(ECommerce.SharedKernel.DTOs.ApiResponse<string>.Ok("OK", "Updated"));
+            return Ok(ApiResponse<string>.Ok("OK", "角色更新成功"));
         }
 
+        /// <summary>
+        /// 删除角色
+        /// </summary>
+        /// <param name="command">删除角色指令</param>
+        /// <returns>删除操作结果</returns>
+        /// <remarks>
+        /// 删除指定的角色，如果角色已被用户使用则无法删除
+        /// 
+        /// 示例请求:
+        /// ```json
+        /// {
+        ///   "roleId": "role-id-here"
+        /// }
+        /// ```
+        /// </remarks>
         [HttpDelete]
-        [ProducesResponseType(StatusCodes.Status204NoContent)]
-        public async Task<IActionResult> DeleteAsync([FromBody] DeleteRoleCommand command)
+        [ProducesResponseType(typeof(ApiResponse<string>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult<ApiResponse<string>>> DeleteAsync([FromBody] DeleteRoleCommand command)
         {
             await roleService.DeleteRoleAsync(command);
-            return Ok(ECommerce.SharedKernel.DTOs.ApiResponse<string>.Ok("OK", "Deleted"));
+            return Ok(ApiResponse<string>.Ok("OK", "角色删除成功"));
         }
 
+        /// <summary>
+        /// 获取所有角色列表
+        /// </summary>
+        /// <returns>角色列表</returns>
+        /// <remarks>
+        /// 获取系统中所有可用的角色列表，包括已启用和已禁用的角色
+        /// </remarks>
         [HttpGet]
-        [ProducesResponseType(typeof(List<RoleDto>), StatusCodes.Status200OK)]
-        public async Task<ActionResult<ECommerce.SharedKernel.DTOs.ApiResponse<List<RoleDto>>>> GetAllAsync()
+        [ProducesResponseType(typeof(ApiResponse<List<RoleDto>>), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult<ApiResponse<List<RoleDto>>>> GetAllAsync()
         {
             var roles = await roleService.GetAllRolesAsync();
-            return Ok(ECommerce.SharedKernel.DTOs.ApiResponse<List<RoleDto>>.Ok(roles));
+            return Ok(ApiResponse<List<RoleDto>>.Ok(roles));
         }
 
+        /// <summary>
+        /// 根据ID获取角色详情
+        /// </summary>
+        /// <param name="roleId">角色ID</param>
+        /// <returns>角色详情</returns>
+        /// <remarks>
+        /// 根据角色ID获取角色的详细信息，包括权限列表
+        /// </remarks>
         [HttpGet("{roleId}")]
-        [ProducesResponseType(typeof(RoleDto), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ApiResponse<RoleDto?>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<ECommerce.SharedKernel.DTOs.ApiResponse<RoleDto?>>> GetByIdAsync(Guid roleId)
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult<ApiResponse<RoleDto?>>> GetByIdAsync(Guid roleId)
         {
             var role = await roleService.GetRoleByIdAsync(new GetRoleByIdCommand { RoleId = roleId });
-            if (role == null) return NotFound(ECommerce.SharedKernel.DTOs.ApiResponse<string>.Fail("NOT_FOUND", "角色不存在"));
-            return Ok(ECommerce.SharedKernel.DTOs.ApiResponse<RoleDto?>.Ok(role));
+            if (role == null) return NotFound(ApiResponse<string>.Fail("NOT_FOUND", "角色不存在"));
+            return Ok(ApiResponse<RoleDto?>.Ok(role));
         }
 
+        /// <summary>
+        /// 获取角色的权限列表
+        /// </summary>
+        /// <param name="roleId">角色ID</param>
+        /// <returns>权限列表</returns>
+        /// <remarks>
+        /// 获取指定角色拥有的所有权限列表
+        /// </remarks>
         [HttpGet("{roleId}/permissions")]
-        [ProducesResponseType(typeof(IReadOnlyList<PermissionDto>), StatusCodes.Status200OK)]
-        public async Task<ActionResult<ECommerce.SharedKernel.DTOs.ApiResponse<IReadOnlyList<PermissionDto>>>> GetPermissionsAsync(Guid roleId)
+        [ProducesResponseType(typeof(ApiResponse<IReadOnlyList<PermissionDto>>), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult<ApiResponse<IReadOnlyList<PermissionDto>>>> GetPermissionsAsync(Guid roleId)
         {
             var perms = await roleService.GetPermissionsByRoleIdAsync(roleId);
-            return Ok(ECommerce.SharedKernel.DTOs.ApiResponse<IReadOnlyList<PermissionDto>>.Ok(perms));
+            return Ok(ApiResponse<IReadOnlyList<PermissionDto>>.Ok(perms));
         }
 
+        /// <summary>
+        /// 为角色分配权限
+        /// </summary>
+        /// <param name="roleId">角色ID</param>
+        /// <param name="permissionIds">权限ID列表</param>
+        /// <returns>分配操作结果</returns>
+        /// <remarks>
+        /// 为指定角色分配多个权限
+        /// 
+        /// 示例请求:
+        /// ```json
+        /// ["permission-id-1", "permission-id-2", "permission-id-3"]
+        /// ```
+        /// </remarks>
         [HttpPost("{roleId}/permissions")]
-        [ProducesResponseType(StatusCodes.Status204NoContent)]
-        public async Task<IActionResult> AssignPermissionsAsync(Guid roleId, [FromBody] List<Guid> permissionIds)
+        [ProducesResponseType(typeof(ApiResponse<string>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult<ApiResponse<string>>> AssignPermissionsAsync(Guid roleId, [FromBody] List<Guid> permissionIds)
         {
             await roleService.AssignPermissionsToRoleAsync(roleId, permissionIds);
-            return Ok(ECommerce.SharedKernel.DTOs.ApiResponse<string>.Ok("OK", "Assigned"));
+            return Ok(ApiResponse<string>.Ok("OK", "权限分配成功"));
         }
 
+        /// <summary>
+        /// 移除角色的指定权限
+        /// </summary>
+        /// <param name="roleId">角色ID</param>
+        /// <param name="permissionId">权限ID</param>
+        /// <returns>移除操作结果</returns>
+        /// <remarks>
+        /// 从指定角色中移除指定的权限
+        /// </remarks>
         [HttpDelete("{roleId}/permissions/{permissionId}")]
-        [ProducesResponseType(StatusCodes.Status204NoContent)]
-        public async Task<IActionResult> RemovePermissionAsync(Guid roleId, Guid permissionId)
+        [ProducesResponseType(typeof(ApiResponse<string>), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult<ApiResponse<string>>> RemovePermissionAsync(Guid roleId, Guid permissionId)
         {
             await roleService.RemovePermissionFromRoleAsync(roleId, permissionId);
-            return Ok(ECommerce.SharedKernel.DTOs.ApiResponse<string>.Ok("OK", "Removed"));
+            return Ok(ApiResponse<string>.Ok("OK", "权限移除成功"));
         }
 
+        /// <summary>
+        /// 启用角色
+        /// </summary>
+        /// <param name="roleId">角色ID</param>
+        /// <returns>启用操作结果</returns>
+        /// <remarks>
+        /// 启用指定的角色，使其可以被分配给用户
+        /// </remarks>
         [HttpPost("{roleId}/enable")]
-        [ProducesResponseType(StatusCodes.Status204NoContent)]
-        public async Task<IActionResult> EnableAsync(Guid roleId)
+        [ProducesResponseType(typeof(ApiResponse<string>), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult<ApiResponse<string>>> EnableAsync(Guid roleId)
         {
             await roleService.EnableAsync(new EnableRoleCommand { RoleId = roleId });
-            return Ok(ECommerce.SharedKernel.DTOs.ApiResponse<string>.Ok("OK", "Enabled"));
+            return Ok(ApiResponse<string>.Ok("OK", "角色启用成功"));
         }
 
+        /// <summary>
+        /// 禁用角色
+        /// </summary>
+        /// <param name="roleId">角色ID</param>
+        /// <returns>禁用操作结果</returns>
+        /// <remarks>
+        /// 禁用指定的角色，使其无法被分配给新用户
+        /// </remarks>
         [HttpPost("{roleId}/disable")]
-        [ProducesResponseType(StatusCodes.Status204NoContent)]
-        public async Task<IActionResult> DisableAsync(Guid roleId)
+        [ProducesResponseType(typeof(ApiResponse<string>), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult<ApiResponse<string>>> DisableAsync(Guid roleId)
         {
             await roleService.DisableAsync(new DisableRoleCommand { RoleId = roleId });
-            return Ok(ECommerce.SharedKernel.DTOs.ApiResponse<string>.Ok("OK", "Disabled"));
+            return Ok(ApiResponse<string>.Ok("OK", "角色禁用成功"));
         }
     }
 }

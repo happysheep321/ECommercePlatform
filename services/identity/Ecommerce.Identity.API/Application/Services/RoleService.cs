@@ -1,12 +1,12 @@
-﻿using Ecommerce.Identity.API.Application.Commands;
-using Ecommerce.Identity.API.Application.DTOs;
-using Ecommerce.Identity.API.Application.Interfaces;
-using Ecommerce.Identity.API.Domain.Aggregates.PermissionAggregate;
-using Ecommerce.Identity.API.Domain.Aggregates.RoleAggregate;
-using Ecommerce.Identity.API.Domain.Repositories;
+﻿using ECommerce.Identity.API.Application.Commands;
+using ECommerce.Identity.API.Application.DTOs;
+using ECommerce.Identity.API.Application.Interfaces;
+using ECommerce.Identity.API.Domain.Aggregates.PermissionAggregate;
+using ECommerce.Identity.API.Domain.Aggregates.RoleAggregate;
+using ECommerce.Identity.API.Domain.Repositories;
 using ECommerce.SharedKernel.Interfaces;
 
-namespace Ecommerce.Identity.API.Application.Services
+namespace ECommerce.Identity.API.Application.Services
 {
     public class RoleService : IRoleService
     {

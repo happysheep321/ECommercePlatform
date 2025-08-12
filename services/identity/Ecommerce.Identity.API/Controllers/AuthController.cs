@@ -1,6 +1,7 @@
-﻿using Ecommerce.Identity.API.Application.Commands;
-using Ecommerce.Identity.API.Application.DTOs;
-using Ecommerce.Identity.API.Application.Interfaces;
+﻿using ECommerce.Identity.API.Application.Commands;
+using ECommerce.Identity.API.Application.DTOs;
+using ECommerce.Identity.API.Application.Interfaces;
+using ECommerce.SharedKernel.DTOs;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Net.Mail;
@@ -29,13 +30,13 @@ namespace ECommerce.Identity.API.Controllers
         /// <returns>用户Id</returns>
         [HttpPost("register")]
         [AllowAnonymous]
-        [ProducesResponseType(typeof(Guid),StatusCodes.Status201Created)]
+        [ProducesResponseType(typeof(ApiResponse<Guid>), StatusCodes.Status201Created)]
         [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<ECommerce.SharedKernel.DTOs.ApiResponse<Guid>>> RegisterAsync([FromBody]RegisterUserCommand command)
+        public async Task<ActionResult<ApiResponse<Guid>>> RegisterAsync([FromBody]RegisterUserCommand command)
         {
             var userId = await userService.RegisterAsync(command);
-            return StatusCode(StatusCodes.Status201Created, ECommerce.SharedKernel.DTOs.ApiResponse<Guid>.Ok(userId, "Created"));
+            return StatusCode(StatusCodes.Status201Created, ApiResponse<Guid>.Ok(userId, "Created"));
         }
 
         /// <summary>
@@ -45,39 +46,71 @@ namespace ECommerce.Identity.API.Controllers
         /// <returns>登录结果</returns>
         [HttpPost("login")]
         [AllowAnonymous]
-        [ProducesResponseType(typeof(LoginResultDto), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ApiResponse<LoginResultDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(typeof(string), StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<ECommerce.SharedKernel.DTOs.ApiResponse<LoginResultDto>>> LoginAsync([FromBody]LoginUserCommand command)
+        public async Task<ActionResult<ApiResponse<LoginResultDto>>> LoginAsync([FromBody]LoginUserCommand command)
         {
             var result = await userService.LoginAsync(command);
-            return Ok(ECommerce.SharedKernel.DTOs.ApiResponse<LoginResultDto>.Ok(result));
+            return Ok(ApiResponse<LoginResultDto>.Ok(result));
         }
 
+        /// <summary>
+        /// 忘记密码 - 通过邮箱重置密码
+        /// </summary>
+        /// <param name="command">忘记密码指令，包含邮箱地址</param>
+        /// <returns>重置密码操作结果</returns>
+        /// <remarks>
+        /// 此接口会向指定邮箱发送密码重置链接，用户可以通过邮件中的链接重置密码
+        /// 
+        /// 示例请求:
+        /// ```json
+        /// {
+        ///   "email": "user@example.com"
+        /// }
+        /// ```
+        /// </remarks>
         [HttpPost("forgot-password")]
         [AllowAnonymous]
-        [ProducesResponseType(typeof(LoginResultDto), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ApiResponse<string>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordCommand command)
+        public async Task<ActionResult<ApiResponse<string>>> ForgotPassword([FromBody] ForgotPasswordCommand command)
         {
             await userService.ResetPasswordByEmailAsync(command);
-            return Ok(ECommerce.SharedKernel.DTOs.ApiResponse<string>.Ok("OK", "密码重置成功"));
+            return Ok(ApiResponse<string>.Ok("OK", "密码重置成功"));
         }
 
+        /// <summary>
+        /// 发送邮箱验证码
+        /// </summary>
+        /// <param name="command">邮箱验证码指令</param>
+        /// <returns>验证码发送结果</returns>
+        /// <remarks>
+        /// 向指定邮箱发送验证码，用于用户注册、登录或其他需要邮箱验证的场景
+        /// 验证码有效期为5分钟
+        /// 
+        /// 示例请求:
+        /// ```json
+        /// {
+        ///   "email": "user@example.com"
+        /// }
+        /// ```
+        /// </remarks>
         [HttpPost("send-code")]
         [AllowAnonymous]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ApiResponse<string>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> SendEmailCode([FromBody] EmailCodeCommand command)
+        public async Task<ActionResult<ApiResponse<string>>> SendEmailCode([FromBody] EmailCodeCommand command)
         {
             var success = await emailVerificationService.SendCodeAsync(command.Email);
             if (!success)
             {
-                return StatusCode(500, ECommerce.SharedKernel.DTOs.ApiResponse<string>.Fail("MAIL_SEND_FAILED", $"验证码发送失败，{command.Email}"));
+                return StatusCode(500, ApiResponse<string>.Fail("MAIL_SEND_FAILED", $"验证码发送失败，{command.Email}"));
             }
-            return Ok(ECommerce.SharedKernel.DTOs.ApiResponse<string>.Ok("OK", "验证码已发送"));
+            return Ok(ApiResponse<string>.Ok("OK", "验证码已发送"));
         }
     }
 }

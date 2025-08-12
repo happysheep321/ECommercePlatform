@@ -1,6 +1,6 @@
 ﻿using ECommerce.SharedKernel.Interfaces;
 
-namespace Ecommerce.Identity.API.Infrastructure
+namespace ECommerce.Identity.API.Infrastructure
 {
     public class UnitOfWork: IUnitOfWork
     {

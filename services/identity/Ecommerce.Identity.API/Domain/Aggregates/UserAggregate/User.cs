@@ -1,10 +1,10 @@
-using Ecommerce.Identity.API.Domain.Aggregates.RoleAggregate;
-using Ecommerce.Identity.API.Domain.Events;
-using Ecommerce.Identity.API.Domain.ValueObjects;
-using Ecommerce.SharedKernel.Base;
+using ECommerce.Identity.API.Domain.Aggregates.RoleAggregate;
+using ECommerce.Identity.API.Domain.Events;
+using ECommerce.Identity.API.Domain.ValueObjects;
+using ECommerce.SharedKernel.Base;
 using ECommerce.SharedKernel.Enums;
 
-namespace Ecommerce.Identity.API.Domain.Aggregates.UserAggregate
+namespace ECommerce.Identity.API.Domain.Aggregates.UserAggregate
 {
     public class User : EntityBase<Guid>
     {

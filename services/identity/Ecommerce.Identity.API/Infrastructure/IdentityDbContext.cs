@@ -1,17 +1,12 @@
-using Ecommerce.Identity.API.Domain.Aggregates.PermissionAggregate;
-using Ecommerce.Identity.API.Domain.Aggregates.RoleAggregate;
-using Ecommerce.Identity.API.Domain.Aggregates.UserAggregate;
-using Ecommerce.SharedKernel.Base;
-using Ecommerce.SharedKernel.Events;
-using ECommerce.SharedKernel.Enums;
+using ECommerce.Identity.API.Domain.Aggregates.PermissionAggregate;
+using ECommerce.Identity.API.Domain.Aggregates.RoleAggregate;
+using ECommerce.Identity.API.Domain.Aggregates.UserAggregate;
+using ECommerce.SharedKernel.Base;
 using ECommerce.SharedKernel.Events;
+using ECommerce.SharedKernel.Enums;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 
-namespace Ecommerce.Identity.API.Infrastructure
+namespace ECommerce.Identity.API.Infrastructure
 {
         public class IdentityDbContext : DbContext
         {

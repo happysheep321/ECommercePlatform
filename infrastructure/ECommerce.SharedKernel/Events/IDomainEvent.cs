@@ -1,6 +1,6 @@
 using MediatR;
 
-namespace Ecommerce.SharedKernel.Events
+namespace ECommerce.SharedKernel.Events
 {
     /// <summary>
     /// 领域事件接口，继承自MediatR的INotification接口

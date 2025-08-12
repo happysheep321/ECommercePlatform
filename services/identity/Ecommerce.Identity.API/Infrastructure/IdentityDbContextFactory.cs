@@ -1,7 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
 
-namespace Ecommerce.Identity.API.Infrastructure
+namespace ECommerce.Identity.API.Infrastructure
 {
     public class IdentityDbContextFactory : IDesignTimeDbContextFactory<IdentityDbContext>
     {
@@ -20,7 +20,8 @@ namespace Ecommerce.Identity.API.Infrastructure
             var optionsBuilder = new DbContextOptionsBuilder<IdentityDbContext>();
             optionsBuilder.UseSqlServer(connectionString);
 
-            return new IdentityDbContext(optionsBuilder.Options);
+            // 设计时不需要领域事件分发器，传入null
+            return new IdentityDbContext(optionsBuilder.Options, null!);
         }
     }
 }

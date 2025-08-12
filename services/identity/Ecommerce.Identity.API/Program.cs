@@ -1,4 +1,4 @@
-﻿using Ecommerce.Identity.API.Extensions;
+﻿using ECommerce.Identity.API.Extensions;
 using ECommerce.BuildingBlocks.Extensions;
 using Serilog;
 

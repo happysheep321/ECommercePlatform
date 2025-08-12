@@ -1,9 +1,9 @@
-using Ecommerce.SharedKernel.Base;
-using Ecommerce.SharedKernel.Interfaces;
+using ECommerce.SharedKernel.Base;
+using ECommerce.SharedKernel.Interfaces;
 using ECommerce.SharedKernel.Enums;
-using Ecommerce.SharedKernel.Events;
+using ECommerce.SharedKernel.Events;
 
-namespace Ecommerce.Identity.API.Domain.Aggregates.PermissionAggregate
+namespace ECommerce.Identity.API.Domain.Aggregates.PermissionAggregate
 {
     public class Permission : EntityBase<Guid>
     {

@@ -1,6 +1,6 @@
-using Ecommerce.SharedKernel.Events;
+using ECommerce.SharedKernel.Events;
 
-namespace Ecommerce.Identity.API.Domain.Events
+namespace ECommerce.Identity.API.Domain.Events
 {
     public class RolePermissionRevokedEvent : IDomainEvent
     {

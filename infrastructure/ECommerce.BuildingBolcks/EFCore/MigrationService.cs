@@ -9,11 +9,11 @@ namespace ECommerce.BuildingBolcks.EFCore
     /// </summary>
     public class MigrationService : IMigrationService
     {
-        private readonly ILogger<MigrationService> _logger;
+        private readonly ILogger<MigrationService> logger;
 
         public MigrationService(ILogger<MigrationService> logger)
         {
-            _logger = logger;
+            this.logger = logger;
         }
 
         /// <summary>
@@ -23,7 +23,7 @@ namespace ECommerce.BuildingBolcks.EFCore
         {
             try
             {
-                _logger.LogInformation("开始创建迁移: {MigrationName} 在项目: {ProjectPath}", migrationName, projectPath);
+                logger.LogInformation("开始创建迁移: {MigrationName} 在项目: {ProjectPath}", migrationName, projectPath);
 
                 var arguments = $"ef migrations add \"{migrationName}\" --project \"{projectPath}\"";
                 if (!string.IsNullOrEmpty(startupProjectPath))
@@ -35,12 +35,12 @@ namespace ECommerce.BuildingBolcks.EFCore
 
                 if (result.Success)
                 {
-                    _logger.LogInformation("迁移创建成功: {MigrationName}", migrationName);
+                    logger.LogInformation("迁移创建成功: {MigrationName}", migrationName);
                     result.Message = $"迁移 '{migrationName}' 创建成功";
                 }
                 else
                 {
-                    _logger.LogError("迁移创建失败: {MigrationName}, 错误: {Error}", migrationName, result.Error);
+                    logger.LogError("迁移创建失败: {MigrationName}, 错误: {Error}", migrationName, result.Error);
                     result.Message = $"迁移 '{migrationName}' 创建失败";
                 }
 
@@ -48,7 +48,7 @@ namespace ECommerce.BuildingBolcks.EFCore
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "创建迁移时发生异常: {MigrationName}", migrationName);
+                logger.LogError(ex, "创建迁移时发生异常: {MigrationName}", migrationName);
                 return new MigrationResult
                 {
                     Success = false,
@@ -65,7 +65,7 @@ namespace ECommerce.BuildingBolcks.EFCore
         {
             try
             {
-                _logger.LogInformation("开始更新数据库，项目路径: {ProjectPath}", projectPath);
+                logger.LogInformation("开始更新数据库，项目路径: {ProjectPath}", projectPath);
 
                 var arguments = "ef database update --project \"" + projectPath + "\"";
                 if (!string.IsNullOrEmpty(startupProjectPath))
@@ -77,12 +77,12 @@ namespace ECommerce.BuildingBolcks.EFCore
 
                 if (result.Success)
                 {
-                    _logger.LogInformation("数据库更新成功");
+                    logger.LogInformation("数据库更新成功");
                     result.Message = "数据库更新成功";
                 }
                 else
                 {
-                    _logger.LogError("数据库更新失败，错误: {Error}", result.Error);
+                    logger.LogError("数据库更新失败，错误: {Error}", result.Error);
                     result.Message = "数据库更新失败";
                 }
 
@@ -90,7 +90,7 @@ namespace ECommerce.BuildingBolcks.EFCore
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "更新数据库时发生异常");
+                logger.LogError(ex, "更新数据库时发生异常");
                 return new MigrationResult
                 {
                     Success = false,
@@ -107,7 +107,7 @@ namespace ECommerce.BuildingBolcks.EFCore
         {
             try
             {
-                _logger.LogInformation("开始移除最后一个迁移，项目路径: {ProjectPath}", projectPath);
+                logger.LogInformation("开始移除最后一个迁移，项目路径: {ProjectPath}", projectPath);
 
                 var arguments = "ef migrations remove --project \"" + projectPath + "\"";
                 if (!string.IsNullOrEmpty(startupProjectPath))
@@ -119,12 +119,12 @@ namespace ECommerce.BuildingBolcks.EFCore
 
                 if (result.Success)
                 {
-                    _logger.LogInformation("最后一个迁移移除成功");
+                    logger.LogInformation("最后一个迁移移除成功");
                     result.Message = "最后一个迁移移除成功";
                 }
                 else
                 {
-                    _logger.LogError("移除迁移失败，错误: {Error}", result.Error);
+                    logger.LogError("移除迁移失败，错误: {Error}", result.Error);
                     result.Message = "移除迁移失败";
                 }
 
@@ -132,7 +132,7 @@ namespace ECommerce.BuildingBolcks.EFCore
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "移除迁移时发生异常");
+                logger.LogError(ex, "移除迁移时发生异常");
                 return new MigrationResult
                 {
                     Success = false,
@@ -149,7 +149,7 @@ namespace ECommerce.BuildingBolcks.EFCore
         {
             try
             {
-                _logger.LogInformation("开始生成SQL脚本，项目路径: {ProjectPath}", projectPath);
+                logger.LogInformation("开始生成SQL脚本，项目路径: {ProjectPath}", projectPath);
 
                 var arguments = "ef migrations script --project \"" + projectPath + "\"";
                 if (!string.IsNullOrEmpty(startupProjectPath))
@@ -165,12 +165,12 @@ namespace ECommerce.BuildingBolcks.EFCore
 
                 if (result.Success)
                 {
-                    _logger.LogInformation("SQL脚本生成成功");
+                    logger.LogInformation("SQL脚本生成成功");
                     result.Message = "SQL脚本生成成功";
                 }
                 else
                 {
-                    _logger.LogError("SQL脚本生成失败，错误: {Error}", result.Error);
+                    logger.LogError("SQL脚本生成失败，错误: {Error}", result.Error);
                     result.Message = "SQL脚本生成失败";
                 }
 
@@ -178,7 +178,7 @@ namespace ECommerce.BuildingBolcks.EFCore
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "生成SQL脚本时发生异常");
+                logger.LogError(ex, "生成SQL脚本时发生异常");
                 return new MigrationResult
                 {
                     Success = false,
@@ -195,7 +195,7 @@ namespace ECommerce.BuildingBolcks.EFCore
         {
             try
             {
-                _logger.LogInformation("开始列出迁移，项目路径: {ProjectPath}", projectPath);
+                logger.LogInformation("开始列出迁移，项目路径: {ProjectPath}", projectPath);
 
                 var arguments = "ef migrations list --project \"" + projectPath + "\"";
                 if (!string.IsNullOrEmpty(startupProjectPath))
@@ -230,7 +230,7 @@ namespace ECommerce.BuildingBolcks.EFCore
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "列出迁移时发生异常");
+                logger.LogError(ex, "列出迁移时发生异常");
                 return new MigrationListResult
                 {
                     Success = false,

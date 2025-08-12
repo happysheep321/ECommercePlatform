@@ -120,7 +120,7 @@
 
 | 服务名称 | 项目路径 | 状态 |
 |---------|---------|------|
-| identity | services/identity/Ecommerce.Identity.API | ✅ 已配置 |
+| identity | services/identity/ECommerce.Identity.API | ✅ 已配置 |
 | product | services/product/ECommerce.Product.API | 🚧 需要配置 |
 | cart | services/cart/ECommerce.Cart.API | 🚧 需要配置 |
 | order | services/order/ECommerce.Order.API | 🚧 需要配置 |

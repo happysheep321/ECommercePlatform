@@ -1,9 +1,6 @@
-using System.Threading.Tasks;
 using MediatR;
-using Ecommerce.SharedKernel.Events;
-using ECommerce.SharedKernel.Events;
 
-namespace Ecommerce.SharedKernel.Events
+namespace ECommerce.SharedKernel.Events
 {
     public class MediatRDomainEventDispatcher : IDomainEventDispatcher
     {

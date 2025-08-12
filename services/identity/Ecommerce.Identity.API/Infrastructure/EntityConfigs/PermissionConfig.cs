@@ -1,8 +1,8 @@
-﻿using Ecommerce.Identity.API.Domain.Aggregates.PermissionAggregate;
+﻿using ECommerce.Identity.API.Domain.Aggregates.PermissionAggregate;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace Ecommerce.Identity.API.Infrastructure.EntityConfigs
+namespace ECommerce.Identity.API.Infrastructure.EntityConfigs
 {
     public class PermissionConfig:IEntityTypeConfiguration<Permission>
     {

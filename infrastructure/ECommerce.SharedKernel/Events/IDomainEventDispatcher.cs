@@ -1,5 +1,5 @@
 using System.Threading.Tasks;
-using Ecommerce.SharedKernel.Events;
+using ECommerce.SharedKernel.Events;
 
 namespace ECommerce.SharedKernel.Events
 {

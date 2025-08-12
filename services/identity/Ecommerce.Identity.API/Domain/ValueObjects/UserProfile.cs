@@ -1,7 +1,7 @@
-﻿using Ecommerce.SharedKernel.Base;
+﻿using ECommerce.SharedKernel.Base;
 using ECommerce.SharedKernel.Enums;
 
-namespace Ecommerce.Identity.API.Domain.ValueObjects
+namespace ECommerce.Identity.API.Domain.ValueObjects
 {
     public class UserProfile:ValueObject
     {

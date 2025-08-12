@@ -1,4 +1,4 @@
-﻿namespace Ecommerce.SharedKernel.Base
+﻿namespace ECommerce.SharedKernel.Base
 {
     public abstract class ValueObject
     {

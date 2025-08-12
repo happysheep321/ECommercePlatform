@@ -1,7 +1,7 @@
-using Ecommerce.Identity.API.Application.Commands;
+using ECommerce.Identity.API.Application.Commands;
 using FluentValidation;
 
-namespace Ecommerce.Identity.API.Application.Validators
+namespace ECommerce.Identity.API.Application.Validators
 {
     public class FreezeUserCommandValidator : AbstractValidator<FreezeUserCommand>
     {

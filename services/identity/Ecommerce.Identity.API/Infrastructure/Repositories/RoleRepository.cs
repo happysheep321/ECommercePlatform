@@ -1,9 +1,9 @@
-﻿using Ecommerce.Identity.API.Domain.Aggregates.PermissionAggregate;
-using Ecommerce.Identity.API.Domain.Aggregates.RoleAggregate;
-using Ecommerce.Identity.API.Domain.Repositories;
+﻿using ECommerce.Identity.API.Domain.Aggregates.PermissionAggregate;
+using ECommerce.Identity.API.Domain.Aggregates.RoleAggregate;
+using ECommerce.Identity.API.Domain.Repositories;
 using Microsoft.EntityFrameworkCore;
 
-namespace Ecommerce.Identity.API.Infrastructure.Repositories
+namespace ECommerce.Identity.API.Infrastructure.Repositories
 {
     public class RoleRepository:IRoleRepository
     {
