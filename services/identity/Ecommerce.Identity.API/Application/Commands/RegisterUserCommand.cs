@@ -1,8 +1,9 @@
 ﻿using ECommerce.SharedKernel.Enums;
+using MediatR;
 
 namespace ECommerce.Identity.API.Application.Commands
 {
-    public class RegisterUserCommand
+    public class RegisterUserCommand : IRequest<Guid>
     {
         /// <summary>
         /// 用户名

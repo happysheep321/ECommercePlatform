@@ -39,6 +39,16 @@ namespace ECommerce.Identity.API.Infrastructure.Repositories
             return await this.context.Users.AnyAsync(u => u.Email == email);
         }
 
+        public async Task<List<User>> GetAllAsync()
+        {
+            return await this.context.Users
+                .Include(u => u.Addresses)
+                .Include(u => u.UserRoles)
+                .Include(u => u.Profile)
+                .AsNoTracking()
+                .ToListAsync();
+        }
+
         public async Task AddAsync(User user)
         {
             await this.context.Users.AddAsync(user);

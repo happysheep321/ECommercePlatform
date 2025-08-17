@@ -1,6 +1,9 @@
-﻿namespace ECommerce.Identity.API.Application.Commands
+﻿using MediatR;
+using ECommerce.Identity.API.Application.DTOs;
+
+namespace ECommerce.Identity.API.Application.Commands
 {
-    public class LoginUserCommand
+    public class LoginUserCommand : IRequest<LoginResultDto>
     {
         public required string UserName { get; set; }
 

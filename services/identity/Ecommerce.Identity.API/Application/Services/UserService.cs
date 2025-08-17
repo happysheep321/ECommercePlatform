@@ -1,4 +1,4 @@
-﻿using ECommerce.Identity.API.Application.Commands;
+using ECommerce.Identity.API.Application.Commands;
 using ECommerce.Identity.API.Application.DTOs;
 using ECommerce.Identity.API.Application.Interfaces;
 using ECommerce.Identity.API.Domain.Aggregates.UserAggregate;
@@ -12,7 +12,7 @@ using Serilog;
 
 namespace ECommerce.Identity.API.Application.Services
 {
-    public class UserService:IUserService
+    public class UserService : IUserService
     {
         private readonly IUserRepository userRepository;
         private readonly IRoleRepository roleRepository;
@@ -24,7 +24,7 @@ namespace ECommerce.Identity.API.Application.Services
         private readonly IHttpContextAccessor httpContextAccessor;
         private readonly IVerificationCodeService verificationCodeService;
 
-        public UserService(IUserRepository userRepository, IRoleRepository roleRepository, IPasswordHasher passwordHasher, JwtTokenGenerator jwtTokenGenerator,IRedisHelper redisHelper,IUnitOfWork unitOfWork, ILogger<UserService> logger, IHttpContextAccessor httpContextAccessor, IVerificationCodeService verificationCodeService)
+        public UserService(IUserRepository userRepository, IRoleRepository roleRepository, IPasswordHasher passwordHasher, JwtTokenGenerator jwtTokenGenerator, IRedisHelper redisHelper, IUnitOfWork unitOfWork, ILogger<UserService> logger, IHttpContextAccessor httpContextAccessor, IVerificationCodeService verificationCodeService)
         {
             this.userRepository = userRepository;
             this.roleRepository = roleRepository;
@@ -88,6 +88,11 @@ namespace ECommerce.Identity.API.Application.Services
                 throw new UnauthorizedAccessException("用户名或密码错误");
             }
 
+            if (user.Status == UserStatus.Deleted)
+            {
+                throw new InvalidOperationException("该用户已被删除，无法登录");
+            }
+
             var token = jwtTokenGenerator.GenerateToken(user.Id, user.UserName!, user.Type, user.Email!, user.PhoneNumber!);
             var ip = httpContextAccessor.HttpContext?.Connection.RemoteIpAddress?.ToString() ?? "unknown";
             var device = httpContextAccessor.HttpContext?.Request.Headers["User-Agent"].ToString() ?? "unknown";
@@ -100,10 +105,10 @@ namespace ECommerce.Identity.API.Application.Services
 
             return new LoginResultDto
             {
-                Token=token.Token,
-                Expiration= token.Expiration,
+                Token = token.Token,
+                Expiration = token.Expiration,
                 UserName = user.UserName,
-                AvatarUrl=user.Profile.AvatarUrl
+                AvatarUrl = user.Profile.AvatarUrl
             };
         }
 
@@ -153,7 +158,7 @@ namespace ECommerce.Identity.API.Application.Services
                     Detail = addr.Detail,
                     IsDefault = addr.IsDefault,
                 }).ToList(),
-                Roles = user.UserRoles.Select(ur => 
+                Roles = user.UserRoles.Select(ur =>
                 {
                     var role = roleMap[ur.RoleId];
 
@@ -171,7 +176,7 @@ namespace ECommerce.Identity.API.Application.Services
 
         public async Task UpdateProfileAsync(Guid userId, UpdateUserProfileCommand command)
         {
-            var user=await userRepository.GetByIdAsync(userId);
+            var user = await userRepository.GetByIdAsync(userId);
             if (user == null) throw new UnauthorizedAccessException("用户不存在");
 
             if (!string.IsNullOrWhiteSpace(command.Email))
@@ -202,7 +207,7 @@ namespace ECommerce.Identity.API.Application.Services
             await unitOfWork.SaveChangesAsync();
         }
 
-        public async Task ChangePasswordAsync(Guid userId,ChangePasswordCommand command)
+        public async Task ChangePasswordAsync(Guid userId, ChangePasswordCommand command)
         {
             var user = await userRepository.GetByIdAsync(userId);
             if (user == null)
@@ -346,6 +351,47 @@ namespace ECommerce.Identity.API.Application.Services
             user.Delete();
             userRepository.Update(user);
             await unitOfWork.SaveChangesAsync();
+        }
+
+        // ===== 管理员功能 =====
+        public async Task<List<UserListDto>> GetAllUsersAsync()
+        {
+            var users = await userRepository.GetAllAsync();
+            var userList = new List<UserListDto>();
+
+            foreach (var user in users)
+            {
+                // 获取用户角色名称（简化信息）
+                var roleIds = user.UserRoles.Select(ur => ur.RoleId).ToList();
+                var roles = await roleRepository.GetByIdsAsync(roleIds);
+                var roleNames = roles.Select(r => r.Name ?? string.Empty).Where(name => !string.IsNullOrEmpty(name)).ToList();
+
+                var userListItem = new UserListDto
+                {
+                    UserId = user.Id,
+                    UserName = user.UserName!,
+                    Email = user.Email,
+                    Phone = user.PhoneNumber,
+                    NickName = user.Profile.NickName,
+                    Status = user.Status,
+                    UserType = user.Type,
+                    CreatedAt = user.RegisterTime,
+                    LastLoginAt = null, // TODO: 后续可以添加最后登录时间字段
+                    RoleNames = roleNames,
+                    IsActive = user.Status == UserStatus.Active,
+                    IsFrozen = user.Status == UserStatus.Frozen,
+                    IsBanned = user.Status == UserStatus.Banned
+                };
+
+                userList.Add(userListItem);
+            }
+
+            return userList;
+        }
+
+        public async Task<UserProfileDto?> GetUserByIdAsync(Guid userId)
+        {
+            return await GetProfileAsync(userId);
         }
     }
 }

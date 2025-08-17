@@ -1,6 +1,7 @@
 using ECommerce.BuildingBlocks.Extensions;
 using Microsoft.AspNetCore.Builder;
 using Serilog;
+using System.Reflection;
 
 namespace ECommerce.BuildingBlocks.Extensions
 {
@@ -18,8 +19,8 @@ namespace ECommerce.BuildingBlocks.Extensions
             string swaggerTitle,
             bool enableJwtAuth = false,
             bool enableRedis = false,
-            Type[]? mediatRAssemblies = null,
-            Type[]? validatorAssemblies = null,
+            Assembly? mediatRAssembly = null,
+            Assembly? validatorAssembly = null,
             string[]? args = null)
         {
             var builder = WebApplication.CreateBuilder(args ?? Environment.GetCommandLineArgs());
@@ -31,8 +32,8 @@ namespace ECommerce.BuildingBlocks.Extensions
                 swaggerTitle: swaggerTitle,
                 enableJwtAuth: enableJwtAuth,
                 enableRedis: enableRedis,
-                mediatRAssemblies: mediatRAssemblies,
-                validatorAssemblies: validatorAssemblies
+                mediatRAssembly: mediatRAssembly,
+                validatorAssembly: validatorAssembly
             );
 
             builder.Host.UseSerilog();
@@ -55,8 +56,8 @@ namespace ECommerce.BuildingBlocks.Extensions
             string swaggerTitle,
             bool enableJwtAuth = false,
             bool enableRedis = false,
-            Type[]? mediatRAssemblies = null,
-            Type[]? validatorAssemblies = null,
+            Assembly? mediatRAssembly = null,
+            Assembly? validatorAssembly = null,
             string[]? args = null)
         {
             var app = CreateMicroservice(
@@ -64,8 +65,8 @@ namespace ECommerce.BuildingBlocks.Extensions
                 swaggerTitle,
                 enableJwtAuth,
                 enableRedis,
-                mediatRAssemblies,
-                validatorAssemblies,
+                mediatRAssembly,
+                validatorAssembly,
                 args
             );
 

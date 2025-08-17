@@ -1,4 +1,4 @@
-﻿using ECommerce.Identity.API.Application.Commands;
+using ECommerce.Identity.API.Application.Commands;
 using FluentValidation;
 
 namespace ECommerce.Identity.API.Application.Validators
@@ -9,9 +9,6 @@ namespace ECommerce.Identity.API.Application.Validators
         {
             RuleFor(x => x.AddressId)
                 .NotEmpty().WithMessage("地址ID不能为空");
-
-            RuleFor(x => x.UserId)
-                .NotEmpty().WithMessage("用户ID不能为空");
 
             RuleFor(x => x.ReceiverName)
                 .NotEmpty().WithMessage("收件人姓名不能为空");

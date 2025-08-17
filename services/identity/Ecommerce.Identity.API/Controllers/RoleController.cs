@@ -4,6 +4,7 @@ using ECommerce.Identity.API.Application.Interfaces;
 using ECommerce.SharedKernel.DTOs;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using MediatR;
 
 namespace ECommerce.Identity.API.Controllers
 {
@@ -14,11 +15,13 @@ namespace ECommerce.Identity.API.Controllers
     {
         private readonly IRoleService roleService;
         private readonly ILogger<RoleController> logger;
+        private readonly IMediator mediator;
 
-        public RoleController(IRoleService roleService, ILogger<RoleController> logger)
+        public RoleController(IRoleService roleService, ILogger<RoleController> logger, IMediator mediator)
         {
             this.roleService = roleService;
             this.logger = logger;
+            this.mediator = mediator;
         }
 
         /// <summary>
@@ -44,7 +47,7 @@ namespace ECommerce.Identity.API.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<ApiResponse<Guid>>> CreateAsync([FromBody] CreateRoleCommand command)
         {
-            var id = await roleService.CreateRoleAsync(command);
+            var id = await mediator.Send(command);
             return StatusCode(StatusCodes.Status201Created, ApiResponse<Guid>.Ok(id, "角色创建成功"));
         }
 
@@ -73,7 +76,7 @@ namespace ECommerce.Identity.API.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<ApiResponse<string>>> UpdateAsync([FromBody] UpdateRoleCommand command)
         {
-            await roleService.UpdateRoleAsync(command);
+            await mediator.Send(command);
             return Ok(ApiResponse<string>.Ok("OK", "角色更新成功"));
         }
 
@@ -99,7 +102,7 @@ namespace ECommerce.Identity.API.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<ApiResponse<string>>> DeleteAsync([FromBody] DeleteRoleCommand command)
         {
-            await roleService.DeleteRoleAsync(command);
+            await mediator.Send(command);
             return Ok(ApiResponse<string>.Ok("OK", "角色删除成功"));
         }
 
@@ -115,7 +118,8 @@ namespace ECommerce.Identity.API.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<ApiResponse<List<RoleDto>>>> GetAllAsync()
         {
-            var roles = await roleService.GetAllRolesAsync();
+            var command = new GetAllRolesCommand();
+            var roles = await mediator.Send(command);
             return Ok(ApiResponse<List<RoleDto>>.Ok(roles));
         }
 
@@ -133,7 +137,8 @@ namespace ECommerce.Identity.API.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<ApiResponse<RoleDto?>>> GetByIdAsync(Guid roleId)
         {
-            var role = await roleService.GetRoleByIdAsync(new GetRoleByIdCommand { RoleId = roleId });
+            var command = new GetRoleByIdCommand { RoleId = roleId };
+            var role = await mediator.Send(command);
             if (role == null) return NotFound(ApiResponse<string>.Fail("NOT_FOUND", "角色不存在"));
             return Ok(ApiResponse<RoleDto?>.Ok(role));
         }
@@ -152,7 +157,8 @@ namespace ECommerce.Identity.API.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<ApiResponse<IReadOnlyList<PermissionDto>>>> GetPermissionsAsync(Guid roleId)
         {
-            var perms = await roleService.GetPermissionsByRoleIdAsync(roleId);
+            var command = new GetPermissionsCommand { RoleId = roleId };
+            var perms = await mediator.Send(command);
             return Ok(ApiResponse<IReadOnlyList<PermissionDto>>.Ok(perms));
         }
 
@@ -177,7 +183,8 @@ namespace ECommerce.Identity.API.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<ApiResponse<string>>> AssignPermissionsAsync(Guid roleId, [FromBody] List<Guid> permissionIds)
         {
-            await roleService.AssignPermissionsToRoleAsync(roleId, permissionIds);
+            var command = new AssignPermissionsCommand { RoleId = roleId, PermissionIds = permissionIds };
+            await mediator.Send(command);
             return Ok(ApiResponse<string>.Ok("OK", "权限分配成功"));
         }
 
@@ -196,7 +203,8 @@ namespace ECommerce.Identity.API.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<ApiResponse<string>>> RemovePermissionAsync(Guid roleId, Guid permissionId)
         {
-            await roleService.RemovePermissionFromRoleAsync(roleId, permissionId);
+            var command = new RemovePermissionCommand { RoleId = roleId, PermissionId = permissionId };
+            await mediator.Send(command);
             return Ok(ApiResponse<string>.Ok("OK", "权限移除成功"));
         }
 
@@ -214,7 +222,7 @@ namespace ECommerce.Identity.API.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<ApiResponse<string>>> EnableAsync(Guid roleId)
         {
-            await roleService.EnableAsync(new EnableRoleCommand { RoleId = roleId });
+            await mediator.Send(new EnableRoleCommand { RoleId = roleId });
             return Ok(ApiResponse<string>.Ok("OK", "角色启用成功"));
         }
 
@@ -232,7 +240,7 @@ namespace ECommerce.Identity.API.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<ApiResponse<string>>> DisableAsync(Guid roleId)
         {
-            await roleService.DisableAsync(new DisableRoleCommand { RoleId = roleId });
+            await mediator.Send(new DisableRoleCommand { RoleId = roleId });
             return Ok(ApiResponse<string>.Ok("OK", "角色禁用成功"));
         }
     }

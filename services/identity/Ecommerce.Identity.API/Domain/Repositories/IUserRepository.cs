@@ -8,6 +8,7 @@ namespace ECommerce.Identity.API.Domain.Repositories
         Task<User?> GetByUserNameAsync(string userName);
         Task<User?> GetByEmailAsync(string email);
         Task<bool> ExistsByEmailAsync(string email);
+        Task<List<User>> GetAllAsync();
         Task AddAsync(User user);
         void Update(User user);
         void Delete(User user);

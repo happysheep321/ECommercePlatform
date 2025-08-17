@@ -14,6 +14,8 @@ using ECommerce.BuildingBolcks.EFCore;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using ECommerce.Identity.API.Domain.Events;
+using System.Reflection;
+using FluentValidation;
 
 namespace ECommerce.Identity.API.Extensions
 {
@@ -27,29 +29,15 @@ namespace ECommerce.Identity.API.Extensions
             IConfiguration config,
             IWebHostEnvironment env)
         {
-            // ===================== 1. 通用微服务配�?=====================
+            // ===================== 1. 通用微服务配置 =====================
             services.AddMicroserviceCommonServices(
                 configuration: config,
                 serviceName: "ECommerce.Identity.API",
                 swaggerTitle: "ECommerce.Identity.API",
                 enableJwtAuth: true,
                 enableRedis: true,
-                mediatRAssemblies: new[]
-                {
-                    typeof(IUserService),
-                    typeof(UserRoleAssignedEvent),
-                    typeof(UserRoleRemovedEvent),
-                    typeof(RolePermissionGrantedEvent),
-                    typeof(RolePermissionRevokedEvent)
-                },
-                validatorAssemblies: new[]
-                {
-                    typeof(RegisterUserCommandValidator),
-                    typeof(LoginUserCommandValidator),
-                    typeof(AddUserAddressCommandValidator),
-                    typeof(UpdateUserAddressCommandValidator),
-                    typeof(UpdateUserProfileCommandValidator)
-                }
+                mediatRAssembly: Assembly.GetExecutingAssembly(),
+                validatorAssembly: Assembly.GetExecutingAssembly()
             );
 
             // ===================== 2. Identity 特定服务 =====================
@@ -57,23 +45,26 @@ namespace ECommerce.Identity.API.Extensions
             services.AddScoped<IPasswordHasher, PasswordHasher>();
             services.AddScoped<IUnitOfWork, UnitOfWork>();
 
-            // ===================== 3. 数据�?=====================
+            // ===================== 3. 数据库 =====================
             services.AddDbContext<IdentityDbContext>(options =>
                 options.UseSqlServer(config.GetConnectionString("UserDb")));
 
-            // ===================== 4. Repository �?=====================
+            // ===================== 4. Repository 层 =====================
             services.AddScoped<IUserRepository, UserRepository>();
             services.AddScoped<IRoleRepository, RoleRepository>();
             services.AddScoped<IPermissionRepository, PermissionRepository>();
 
-            // ===================== 5. Domain Service �?=====================
+            // ===================== 5. Domain Service 层 =====================
             services.Configure<EmailOptions>(config.GetSection("Email"));
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<IRoleService, RoleService>();
+            services.AddScoped<IPermissionService, PermissionService>();
             services.AddScoped<IEmailSender, SmtpEmailSender>();
             services.AddScoped<IVerificationCodeService, EmailVerificationService>();
+            services.AddScoped<IAvatarService, AvatarService>();
 
             // ===================== 6. Pipeline 行为 =====================
+            // 注册ValidationBehavior以支持IRequest和IRequest<TResponse>
             services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
 
             // ===================== 7. Domain Event Dispatcher =====================

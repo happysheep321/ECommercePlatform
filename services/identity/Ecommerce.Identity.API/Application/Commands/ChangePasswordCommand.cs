@@ -1,6 +1,8 @@
-﻿namespace ECommerce.Identity.API.Application.Commands
+﻿using MediatR;
+
+namespace ECommerce.Identity.API.Application.Commands
 {
-    public class ChangePasswordCommand
+    public class ChangePasswordCommand : IRequest
     {
         public string CurrentPassword { get; set; } = default!;
         public string NewPassword { get; set; } = default!;

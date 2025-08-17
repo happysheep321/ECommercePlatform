@@ -1,12 +1,19 @@
 ﻿using ECommerce.Identity.API.Application.Commands;
 using FluentValidation;
+using Microsoft.Extensions.Logging;
 
 namespace ECommerce.Identity.API.Application.Validators
 {
     public class UpdateUserProfileCommandValidator : AbstractValidator<UpdateUserProfileCommand>
     {
-        public UpdateUserProfileCommandValidator()
+        private readonly ILogger<UpdateUserProfileCommandValidator> logger;
+
+        public UpdateUserProfileCommandValidator(ILogger<UpdateUserProfileCommandValidator> logger)
         {
+            this.logger = logger;
+            
+            logger.LogInformation("UpdateUserProfileCommandValidator 构造函数被调用");
+
             RuleFor(x => x.Email)
                 .EmailAddress()
                 .When(x => !string.IsNullOrWhiteSpace(x.Email))

@@ -1,9 +1,11 @@
-﻿namespace ECommerce.Identity.API.Application.Commands
+﻿using MediatR;
+
+namespace ECommerce.Identity.API.Application.Commands
 {
     /// <summary>
     /// 创建EF Core迁移命令
     /// </summary>
-    public class CreateMigrationCommand
+    public class CreateMigrationCommand : IRequest
     {
         /// <summary>
         /// 迁移名称

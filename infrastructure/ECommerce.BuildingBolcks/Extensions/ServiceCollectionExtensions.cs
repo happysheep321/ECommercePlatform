@@ -10,6 +10,7 @@ using System.Text;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Configuration;
 using FluentValidation;
+using System.Reflection;
 
 namespace ECommerce.BuildingBlocks.Extensions
 {
@@ -204,13 +205,18 @@ namespace ECommerce.BuildingBlocks.Extensions
 
         public static IServiceCollection AddMediatRServices(
             this IServiceCollection services,
-            params Type[] assemblyMarkerTypes)
+            Assembly? assembly = null)
         {
             services.AddMediatR(cfg =>
             {
-                foreach (var markerType in assemblyMarkerTypes)
+                if (assembly != null)
                 {
-                    cfg.RegisterServicesFromAssembly(markerType.Assembly);
+                    cfg.RegisterServicesFromAssembly(assembly);
+                }
+                else
+                {
+                    // 默认注册当前程序集
+                    cfg.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly());
                 }
             });
 
@@ -236,8 +242,8 @@ namespace ECommerce.BuildingBlocks.Extensions
             string swaggerTitle,
             bool enableJwtAuth = false,
             bool enableRedis = false,
-            Type[]? mediatRAssemblies = null,
-            Type[]? validatorAssemblies = null)
+            Assembly? mediatRAssembly = null,
+            Assembly? validatorAssembly = null)
         {
             services.AddBaseWebServices();
             services.AddSerilogServices(configuration, serviceName);
@@ -257,14 +263,14 @@ namespace ECommerce.BuildingBlocks.Extensions
                 services.AddRedisServices(configuration);
             }
 
-            if (mediatRAssemblies != null && mediatRAssemblies.Length > 0)
+            if (mediatRAssembly != null)
             {
-                services.AddMediatRServices(mediatRAssemblies);
+                services.AddMediatRServices(mediatRAssembly);
             }
 
-            if (validatorAssemblies != null && validatorAssemblies.Length > 0)
+            if (validatorAssembly != null)
             {
-                services.AddFluentValidationServices(validatorAssemblies);
+                services.AddValidatorsFromAssembly(validatorAssembly);
             }
 
             return services;

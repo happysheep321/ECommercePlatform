@@ -13,6 +13,7 @@ namespace ECommerce.Identity.API.Application.Services
 
         private const int CodeLength = 6;
         private const int ExpiryMinutes = 5;
+        private readonly TimeSpan operationTimeout = TimeSpan.FromSeconds(10);
 
         public EmailVerificationService(IRedisHelper redisHelper, IEmailSender emailSender, ILogger<EmailVerificationService> logger)
         {
@@ -23,26 +24,47 @@ namespace ECommerce.Identity.API.Application.Services
 
         public async Task<bool> SendCodeAsync(string email)
         {
-            var code = GenerateCode(CodeLength);
-            var key=GetRedisKey(email);
+            try
+            {
+                using var cts = new CancellationTokenSource(operationTimeout);
+                var code = GenerateCode(CodeLength);
+                var key=GetRedisKey(email);
 
-            await redisHelper.SetAsync(key, code, TimeSpan.FromMinutes(ExpiryMinutes));
-            logger.LogInformation($"验证码 {code} 已发送至 {email}，有效期 {ExpiryMinutes} 分钟。");
-            return await emailSender.SendEmailAsync(email, "您的验证码", $"您的验证码是：{code}，请在{ExpiryMinutes}分钟内使用。");
+                await redisHelper.SetAsync(key, code, TimeSpan.FromMinutes(ExpiryMinutes));
+                logger.LogInformation($"验证码 {code} 已发送至 {email}，有效期 {ExpiryMinutes} 分钟。");
+                return await emailSender.SendEmailAsync(email, "您的验证码", $"您的验证码是：{code}，请在{ExpiryMinutes}分钟内使用。");
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "发送验证码失败: {Email}", email);
+                throw new InvalidOperationException("验证码发送失败，请稍后重试");
+            }
         }
 
         public async Task<bool> VerifyCodeAsync(string email, string code)
         {
-            var key = GetRedisKey(email);
-            var cachedCode = await redisHelper.GetAsync<string>(key);
-
-            if (cachedCode == null || cachedCode != code)
+            try
             {
-                return false;
-            }
+                using var cts = new CancellationTokenSource(operationTimeout);
+                var key = GetRedisKey(email);
+                var cachedCode = await redisHelper.GetAsync<string>(key);
 
-            await redisHelper.DeleteAsync(key);
-            return true;
+                if (cachedCode == null || cachedCode != code)
+                {
+                    logger.LogWarning("验证码验证失败: {Email}, 输入码: {InputCode}, 缓存码: {CachedCode}", 
+                        email, code, cachedCode ?? "null");
+                    return false;
+                }
+
+                await redisHelper.DeleteAsync(key);
+                logger.LogInformation("验证码验证成功: {Email}", email);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "验证码验证过程中发生错误: {Email}", email);
+                throw new InvalidOperationException("验证码验证失败，请稍后重试");
+            }
         }
 
         private static string GenerateCode(int length)

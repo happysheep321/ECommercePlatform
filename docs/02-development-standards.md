@@ -664,6 +664,201 @@ public class MigrationController : ControllerBase
 }
 ```
 
----
+### 5. 管理员接口规范
+
+#### 权限控制
+所有管理员接口必须使用角色授权：
+```csharp
+[Authorize(Roles = "Admin")]
+[ApiController]
+[Route("api/[controller]")]
+public class AdminController : ControllerBase
+{
+    // 管理员接口实现
+}
+```
+
+#### 接口命名规范
+- 管理员接口使用 `admin/` 前缀：`/api/user/admin/all`
+- 用户相关接口：`/api/user/admin/{userId}`
+- 权限相关接口：`/api/permission`
+- 角色相关接口：`/api/role`
+
+#### 响应格式规范
+```csharp
+// 成功响应
+return Ok(ApiResponse<List<UserProfileDto>>.Ok(users));
+
+// 失败响应
+return NotFound(ApiResponse<string>.Fail("NOT_FOUND", "用户不存在"));
+
+// 错误响应
+return BadRequest(ApiResponse<string>.Fail("INVALID_INPUT", "输入参数无效"));
+```
+
+#### 性能优化规范
+```csharp
+// ✅ 正确：使用Include预加载，避免N+1查询
+public async Task<List<User>> GetAllAsync()
+{
+    return await context.Users
+        .Include(u => u.Addresses)
+        .Include(u => u.UserRoles)
+        .Include(u => u.Profile)
+        .AsNoTracking()
+        .ToListAsync();
+}
+
+// ❌ 错误：N+1查询问题
+public async Task<List<UserProfileDto>> GetAllUsersAsync()
+{
+    var users = await userRepository.GetAllAsync();
+    foreach (var user in users)
+    {
+        var profile = await GetProfileAsync(user.Id); // 每次都会查询数据库
+    }
+}
+```
+
+#### 安全规范
+```csharp
+// ✅ 正确：记录管理员操作日志
+[HttpPost("{userId}/ban")]
+public async Task<IActionResult> BanUser(Guid userId, [FromBody] string reason)
+{
+    logger.LogInformation("管理员 {AdminId} 封禁用户 {UserId}，原因：{Reason}", 
+        GetCurrentUserId(), userId, reason);
+    
+    await mediator.Send(new BanUserCommand { UserId = userId, Reason = reason });
+    return Ok(ApiResponse<string>.Ok("OK", "用户封禁成功"));
+}
+
+// ✅ 正确：参数验证
+public class BanUserCommandValidator : AbstractValidator<BanUserCommand>
+{
+    public BanUserCommandValidator()
+    {
+        RuleFor(x => x.UserId).NotEmpty().WithMessage("用户ID不能为空");
+        RuleFor(x => x.Reason).NotEmpty().MaximumLength(500).WithMessage("封禁原因不能为空且不能超过500字符");
+    }
+}
+
+// ✅ 正确：权限服务实现
+public class PermissionService : IPermissionService
+{
+    private readonly IPermissionRepository permissionRepository;
+    private readonly IUserRepository userRepository;
+    private readonly IRoleRepository roleRepository;
+
+    public PermissionService(
+        IPermissionRepository permissionRepository,
+        IUserRepository userRepository,
+        IRoleRepository roleRepository)
+    {
+        this.permissionRepository = permissionRepository;
+        this.userRepository = userRepository;
+        this.roleRepository = roleRepository;
+    }
+
+    public async Task<IReadOnlyList<PermissionDto>> GetAllPermissionsAsync()
+    {
+        var permissions = await permissionRepository.GetAllAsync();
+        return permissions.Select(p => new PermissionDto
+        {
+            PermissionId = p.Id,
+            Name = p.DisplayName ?? p.Name ?? string.Empty,
+            Code = p.Name ?? string.Empty,
+            Description = p.Description,
+            IsEnabled = p.Enabled,
+            IsSystemPermission = false
+        }).ToList();
+    }
+
+    public async Task<bool> HasPermissionAsync(Guid userId, string permissionCode)
+    {
+        var user = await userRepository.GetByIdAsync(userId);
+        if (user == null) return false;
+
+        // 优化：获取所有角色ID，然后批量获取权限
+        var roleIds = user.UserRoles.Select(ur => ur.RoleId).ToList();
+        if (!roleIds.Any()) return false;
+
+        var allRolePermissions = new List<Permission>();
+        foreach (var roleId in roleIds)
+        {
+            var rolePermissions = await roleRepository.GetPermissionsByRoleIdAsync(roleId);
+            allRolePermissions.AddRange(rolePermissions);
+        }
+
+        return allRolePermissions.Any(p => p.Name == permissionCode && p.Enabled);
+    }
+}
+```
+
+#### 依赖注入配置
+```csharp
+// ✅ 正确：在ServiceExtensions中注册服务
+public static IServiceCollection AddIdentityModule(
+    this IServiceCollection services,
+    IConfiguration config,
+    IWebHostEnvironment env)
+{
+    // ... 其他配置
+
+    // 注册服务
+    services.AddScoped<IUserService, UserService>();
+    services.AddScoped<IRoleService, RoleService>();
+    services.AddScoped<IPermissionService, PermissionService>(); // 新增权限服务
+    services.AddScoped<IEmailSender, SmtpEmailSender>();
+    services.AddScoped<IVerificationCodeService, EmailVerificationService>();
+    services.AddScoped<IAvatarService, AvatarService>();
+
+    return services;
+}
+```
+
+#### 接口命名规范
+- 管理员接口使用 `admin/` 前缀：`/api/user/admin/all`
+- 用户相关接口：`/api/user/admin/{userId}`
+- 权限相关接口：`/api/permission`
+- 角色相关接口：`/api/role`
+
+#### 响应格式规范
+```csharp
+// 成功响应
+return Ok(ApiResponse<List<UserProfileDto>>.Ok(users));
+
+// 失败响应
+return NotFound(ApiResponse<string>.Fail("NOT_FOUND", "用户不存在"));
+
+// 错误响应
+return BadRequest(ApiResponse<string>.Fail("INVALID_INPUT", "输入参数无效"));
+```
+
+#### 性能优化规范
+```csharp
+// ✅ 正确：使用Include预加载，避免N+1查询
+public async Task<List<User>> GetAllAsync()
+{
+    return await context.Users
+        .Include(u => u.Addresses)
+        .Include(u => u.UserRoles)
+        .Include(u => u.Profile)
+        .AsNoTracking()
+        .ToListAsync();
+}
+
+// ❌ 错误：N+1查询问题
+public async Task<List<UserProfileDto>> GetAllUsersAsync()
+{
+    var users = await userRepository.GetAllAsync();
+    foreach (var user in users)
+    {
+        var profile = await GetProfileAsync(user.Id); // 每次都会查询数据库
+    }
+}
+```
+
+#### 安全规范
 
 **记住**：好的代码不仅能运行，更要易读、易维护、易扩展！

@@ -1,6 +1,8 @@
-﻿namespace ECommerce.Identity.API.Application.Commands
+﻿using MediatR;
+
+namespace ECommerce.Identity.API.Application.Commands
 {
-    public class EmailCodeCommand
+    public class EmailCodeCommand : IRequest
     {
         public string Email { get; set; } = default!;
     }

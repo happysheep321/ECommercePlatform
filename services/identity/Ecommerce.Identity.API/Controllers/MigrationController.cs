@@ -3,6 +3,7 @@ using ECommerce.Identity.API.Application.Commands;
 using ECommerce.SharedKernel.DTOs;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using MediatR;
 
 namespace ECommerce.Identity.API.Controllers
 {
@@ -16,11 +17,13 @@ namespace ECommerce.Identity.API.Controllers
     {
         private readonly IMigrationService migrationService;
         private readonly ILogger<MigrationController> logger;
+        private readonly IMediator mediator;
 
-        public MigrationController(IMigrationService migrationService, ILogger<MigrationController> logger)
+        public MigrationController(IMigrationService migrationService, ILogger<MigrationController> logger, IMediator mediator)
         {
             this.migrationService = migrationService;
             this.logger = logger;
+            this.mediator = mediator;
         }
 
         /// <summary>
@@ -46,6 +49,8 @@ namespace ECommerce.Identity.API.Controllers
         {
             try
             {
+                await mediator.Send(command);
+                
                 // 获取当前项目路径
                 var projectPath = Directory.GetCurrentDirectory();
                 
@@ -196,6 +201,8 @@ namespace ECommerce.Identity.API.Controllers
         {
             try
             {
+                await mediator.Send(command);
+                
                 var projectPath = Directory.GetCurrentDirectory();
                 
                 var result = await migrationService.GenerateScriptAsync(

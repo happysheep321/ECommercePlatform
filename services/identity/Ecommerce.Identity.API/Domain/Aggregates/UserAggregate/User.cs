@@ -197,7 +197,7 @@ namespace ECommerce.Identity.API.Domain.Aggregates.UserAggregate
             PhoneNumber = phone;
             Type = userType;
             Profile = new UserProfile(
-                nickName: $"新用户_{userName}",
+                nickName: string.Concat($"新用户_", Guid.NewGuid().ToString("N").AsSpan(0, 8)),
                 avatarUrl: "",
                 birthday: DateTime.UtcNow,
                 gender: Gender.Unspecified

@@ -1,13 +1,15 @@
+using MediatR;
+
 namespace ECommerce.Identity.API.Application.Commands
 {
-    public class UpdateUserProfileCommand
+    public class UpdateUserProfileCommand : IRequest
     {
         public string Email { get; set; } = default!;
         public string Phone { get; set; } = default!;
         public string AvatarUrl { get; set; } = default!;
         public string NickName { get; set; } = default!;
         /// <summary>
-        /// ÐÔ±ð£¨0=ÄÐ£¬1=Å®£¬2=Î´Öª£©
+        /// æ€§åˆ«ï¼š0=ç”·ï¼Œ1=å¥³ï¼Œ2=æœªçŸ¥
         /// </summary>
         public int Gender { get; set; }
     }

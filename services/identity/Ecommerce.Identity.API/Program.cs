@@ -13,6 +13,9 @@ var app = builder.Build();
 
 Log.Information("---------- 启动 Identity 微服务 ----------");
 
+// 配置静态文件服务
+app.UseStaticFiles();
+
 // 使用通用微服务中间件配置
 app.UseMicroserviceCommonMiddleware(builder.Environment);
 

@@ -30,8 +30,12 @@ namespace ECommerce.Identity.API.Application.Interfaces
         // 用户状态管理
         Task ActivateAsync(ActivateUserCommand command);
         Task BanAsync(BanUserCommand command);
-        Task FreezeAsync(FreezeUserCommand command);
-        Task DeleteAsync(DeleteUserCommand command);
+                    Task FreezeAsync(FreezeUserCommand command);
+            Task DeleteAsync(DeleteUserCommand command);
+
+            // 管理员功能
+            Task<List<UserListDto>> GetAllUsersAsync();
+            Task<UserProfileDto?> GetUserByIdAsync(Guid userId);
 
         //// 通知订阅
         //Task SubscribeAsync(Guid userId);

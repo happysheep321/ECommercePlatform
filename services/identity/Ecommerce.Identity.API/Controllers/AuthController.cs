@@ -5,6 +5,7 @@ using ECommerce.SharedKernel.DTOs;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Net.Mail;
+using MediatR;
 
 namespace ECommerce.Identity.API.Controllers
 {
@@ -15,12 +16,14 @@ namespace ECommerce.Identity.API.Controllers
         private readonly IUserService userService;
         private readonly IVerificationCodeService emailVerificationService;
         private readonly ILogger<AuthController> logger;
+        private readonly IMediator mediator;
 
-        public AuthController(IUserService userService, IVerificationCodeService emailVerificationService , ILogger<AuthController> logger)
+        public AuthController(IUserService userService, IVerificationCodeService emailVerificationService, ILogger<AuthController> logger, IMediator mediator)
         {
             this.userService = userService;
             this.emailVerificationService = emailVerificationService;
             this.logger = logger;
+            this.mediator = mediator;
         }
 
         /// <summary>
@@ -35,7 +38,7 @@ namespace ECommerce.Identity.API.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<ApiResponse<Guid>>> RegisterAsync([FromBody]RegisterUserCommand command)
         {
-            var userId = await userService.RegisterAsync(command);
+            var userId = await mediator.Send(command);
             return StatusCode(StatusCodes.Status201Created, ApiResponse<Guid>.Ok(userId, "Created"));
         }
 
@@ -52,7 +55,7 @@ namespace ECommerce.Identity.API.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<ApiResponse<LoginResultDto>>> LoginAsync([FromBody]LoginUserCommand command)
         {
-            var result = await userService.LoginAsync(command);
+            var result = await mediator.Send(command);
             return Ok(ApiResponse<LoginResultDto>.Ok(result));
         }
 
@@ -78,7 +81,7 @@ namespace ECommerce.Identity.API.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<ApiResponse<string>>> ForgotPassword([FromBody] ForgotPasswordCommand command)
         {
-            await userService.ResetPasswordByEmailAsync(command);
+            await mediator.Send(command);
             return Ok(ApiResponse<string>.Ok("OK", "密码重置成功"));
         }
 
@@ -105,11 +108,7 @@ namespace ECommerce.Identity.API.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<ApiResponse<string>>> SendEmailCode([FromBody] EmailCodeCommand command)
         {
-            var success = await emailVerificationService.SendCodeAsync(command.Email);
-            if (!success)
-            {
-                return StatusCode(500, ApiResponse<string>.Fail("MAIL_SEND_FAILED", $"验证码发送失败，{command.Email}"));
-            }
+            await mediator.Send(command);
             return Ok(ApiResponse<string>.Ok("OK", "验证码已发送"));
         }
     }

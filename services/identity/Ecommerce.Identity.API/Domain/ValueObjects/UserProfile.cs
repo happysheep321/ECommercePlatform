@@ -5,7 +5,7 @@ namespace ECommerce.Identity.API.Domain.ValueObjects
 {
     public class UserProfile:ValueObject
     {
-        private const string DefaultAvatarUrl = "https://yourcdn.com/avatars/default.png"; // 默认用户头像
+        private const string DefaultAvatarUrl = "/images/default-avatar.png"; // 默认用户头像
 
         public string NickName { get;private set; }=string.Empty;
 

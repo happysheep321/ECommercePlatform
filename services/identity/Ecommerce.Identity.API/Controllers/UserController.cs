@@ -1,26 +1,33 @@
-﻿using ECommerce.Identity.API.Application.Commands;
+using ECommerce.Identity.API.Application.Commands;
 using ECommerce.Identity.API.Application.DTOs;
 using ECommerce.Identity.API.Application.Interfaces;
+using ECommerce.Identity.API.Application.Services;
 using ECommerce.SharedKernel.DTOs;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
+using MediatR;
+using FluentValidation;
 
 namespace ECommerce.Identity.API.Controllers
 {
     [Authorize]
     [ApiController]
     [Route("api/[controller]")]
-    public class UserController : ControllerBase
-    {
-        private readonly IUserService userService;
-        private readonly ILogger<UserController> logger;
-
-        public UserController(IUserService userService, ILogger<UserController> logger)
+            public class UserController : ControllerBase
         {
-            this.userService = userService;
-            this.logger = logger;
-        }
+            private readonly IUserService userService;
+            private readonly ILogger<UserController> logger;
+            private readonly IMediator mediator;
+            private readonly IAvatarService avatarService;
+
+            public UserController(IUserService userService, ILogger<UserController> logger, IMediator mediator, IAvatarService avatarService)
+            {
+                this.userService = userService;
+                this.logger = logger;
+                this.mediator = mediator;
+                this.avatarService = avatarService;
+            }
 
         private Guid GetCurrentUserId()
         {
@@ -44,8 +51,8 @@ namespace ECommerce.Identity.API.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<ApiResponse<UserProfileDto>>> GetProfileAsync()
         {
-            var userId = GetCurrentUserId();
-            var profile = await userService.GetProfileAsync(userId);
+            var command = new GetUserProfileCommand();
+            var profile = await mediator.Send(command);
             if (profile == null)
                 return NotFound(ApiResponse<string>.Fail("NOT_FOUND", "用户不存在"));
             return Ok(ApiResponse<UserProfileDto>.Ok(profile));
@@ -76,8 +83,7 @@ namespace ECommerce.Identity.API.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<ApiResponse<string>>> UpdateProfileAsync([FromBody] UpdateUserProfileCommand command)
         {
-            var userId = GetCurrentUserId();
-            await userService.UpdateProfileAsync(userId, command);
+            await mediator.Send(command);
             return Ok(ApiResponse<string>.Ok("OK", "更新成功"));
         }
 
@@ -104,8 +110,7 @@ namespace ECommerce.Identity.API.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<ApiResponse<string>>> ChangePasswordPasswordAsync([FromBody] ChangePasswordCommand command)
         {
-            var userId = GetCurrentUserId();
-            await userService.ChangePasswordAsync(userId, command);
+            await mediator.Send(command);
             return Ok(ApiResponse<string>.Ok("OK", "修改成功"));
         }
 
@@ -138,8 +143,7 @@ namespace ECommerce.Identity.API.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<ApiResponse<string>>> AddAddressAsync([FromBody] AddUserAddressCommand command)
         {
-            var userId = GetCurrentUserId();
-            await userService.AddAddressAsync(userId, command);
+            await mediator.Send(command);
             return Ok(ApiResponse<string>.Ok("OK", "地址添加成功"));
         }
 
@@ -160,7 +164,7 @@ namespace ECommerce.Identity.API.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<ApiResponse<string>>> ActivateAsync(Guid userId)
         {
-            await userService.ActivateAsync(new ActivateUserCommand { UserId = userId });
+            await mediator.Send(new ActivateUserCommand { UserId = userId });
             return Ok(ApiResponse<string>.Ok("OK", "用户激活成功"));
         }
 
@@ -182,7 +186,8 @@ namespace ECommerce.Identity.API.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<ApiResponse<string>>> AssignRoleAsync([FromQuery] Guid userId, [FromQuery] Guid roleId)
         {
-            await userService.AssignRoleAsync(userId, roleId);
+            var command = new AssignRoleCommand { UserId = userId, RoleId = roleId };
+            await mediator.Send(command);
             return Ok(ApiResponse<string>.Ok("OK", "角色分配成功"));
         }
 
@@ -202,7 +207,8 @@ namespace ECommerce.Identity.API.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<ApiResponse<string>>> RemoveRoleAsync([FromQuery] Guid userId, [FromQuery] Guid roleId)
         {
-            await userService.RemoveRoleAsync(userId, roleId);
+            var command = new RemoveRoleCommand { UserId = userId, RoleId = roleId };
+            await mediator.Send(command);
             return Ok(ApiResponse<string>.Ok("OK", "角色移除成功"));
         }
 
@@ -227,7 +233,7 @@ namespace ECommerce.Identity.API.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<ApiResponse<string>>> BanAsync(Guid userId, [FromBody] string reason)
         {
-            await userService.BanAsync(new BanUserCommand { UserId = userId, Reason = reason });
+            await mediator.Send(new BanUserCommand { UserId = userId, Reason = reason });
             return Ok(ApiResponse<string>.Ok("OK", "用户封禁成功"));
         }
 
@@ -252,7 +258,7 @@ namespace ECommerce.Identity.API.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<ApiResponse<string>>> FreezeAsync(Guid userId, [FromBody] string reason)
         {
-            await userService.FreezeAsync(new FreezeUserCommand { UserId = userId, Reason = reason });
+            await mediator.Send(new FreezeUserCommand { UserId = userId, Reason = reason });
             return Ok(ApiResponse<string>.Ok("OK", "用户冻结成功"));
         }
 
@@ -265,14 +271,56 @@ namespace ECommerce.Identity.API.Controllers
         /// 管理员操作：永久删除指定的用户账户，此操作不可恢复
         /// </remarks>
         [Authorize(Roles = "Admin")]
-        [HttpDelete("{userId}")]
+        [HttpDelete("admin/{userId}")]
         [ProducesResponseType(typeof(ApiResponse<string>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<ApiResponse<string>>> DeleteAsync(Guid userId)
         {
-            await userService.DeleteAsync(new DeleteUserCommand { UserId = userId });
+            await mediator.Send(new DeleteUserCommand { UserId = userId });
             return Ok(ApiResponse<string>.Ok("OK", "用户删除成功"));
+        }
+
+        // ===== 管理员功能 =====
+
+        /// <summary>
+        /// 获取所有用户列表
+        /// </summary>
+        /// <returns>用户列表</returns>
+        /// <remarks>
+        /// 管理员操作：获取系统中所有用户的列表，包含用户状态、角色等管理信息
+        /// 不包含详细地址信息，如需详细信息请调用单个用户详情接口
+        /// </remarks>
+        [Authorize(Roles = "Admin")]
+        [HttpGet("admin/all")]
+        [ProducesResponseType(typeof(ApiResponse<List<UserListDto>>), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult<ApiResponse<List<UserListDto>>>> GetAllUsersAsync()
+        {
+            var command = new GetAllUsersCommand();
+            var users = await mediator.Send(command);
+            return Ok(ApiResponse<List<UserListDto>>.Ok(users));
+        }
+
+        /// <summary>
+        /// 根据ID获取用户详情
+        /// </summary>
+        /// <param name="userId">用户ID</param>
+        /// <returns>用户详情</returns>
+        /// <remarks>
+        /// 管理员操作：根据用户ID获取指定用户的详细信息
+        /// </remarks>
+        [Authorize(Roles = "Admin")]
+        [HttpGet("admin/{userId}")]
+        [ProducesResponseType(typeof(ApiResponse<UserProfileDto?>), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult<ApiResponse<UserProfileDto?>>> GetUserByIdAsync(Guid userId)
+        {
+            var command = new GetUserByIdCommand { UserId = userId };
+            var user = await mediator.Send(command);
+            if (user == null) return NotFound(ApiResponse<string>.Fail("NOT_FOUND", "用户不存在"));
+            return Ok(ApiResponse<UserProfileDto?>.Ok(user));
         }
 
         /// <summary>
@@ -304,8 +352,7 @@ namespace ECommerce.Identity.API.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<ApiResponse<string>>> UpdateAddressAsync([FromBody] UpdateUserAddressCommand command)
         {
-            var userId = GetCurrentUserId();
-            await userService.UpdateAddressAsync(userId, command);
+            await mediator.Send(command);
             return Ok(ApiResponse<string>.Ok("OK", "地址更新成功"));
         }
 
@@ -323,9 +370,113 @@ namespace ECommerce.Identity.API.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<ApiResponse<string>>> RemoveAddressAsync(Guid addressId)
         {
-            var userId = GetCurrentUserId();
-            await userService.RemoveAddressAsync(userId, addressId);
+            var command = new RemoveAddressCommand { AddressId = addressId };
+            await mediator.Send(command);
             return Ok(ApiResponse<string>.Ok("OK", "地址删除成功"));
+        }
+
+        /// <summary>
+        /// 上传用户头像
+        /// </summary>
+        /// <param name="file">头像文件</param>
+        /// <returns>上传结果</returns>
+        /// <remarks>
+        /// 上传用户头像文件，支持jpg、png、gif格式，文件大小不超过2MB
+        /// </remarks>
+        [HttpPost("avatar")]
+        [ProducesResponseType(typeof(ApiResponse<string>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult<ApiResponse<string>>> UploadAvatarAsync(IFormFile file)
+        {
+            if (file == null || file.Length == 0)
+                return BadRequest(ApiResponse<string>.Fail("INVALID_FILE", "请选择要上传的文件"));
+
+            // 验证文件类型
+            var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".gif" };
+            var fileExtension = Path.GetExtension(file.FileName).ToLowerInvariant();
+            if (!allowedExtensions.Contains(fileExtension))
+                return BadRequest(ApiResponse<string>.Fail("INVALID_FILE_TYPE", "只支持jpg、png、gif格式的图片"));
+
+            // 验证文件大小（2MB）
+            if (file.Length > 2 * 1024 * 1024)
+                return BadRequest(ApiResponse<string>.Fail("FILE_TOO_LARGE", "文件大小不能超过2MB"));
+
+            try
+            {
+                var userId = GetCurrentUserId();
+                var avatarUrl = await avatarService.UploadAvatarAsync(file, userId);
+                
+                // 更新用户头像URL
+                var updateCommand = new UpdateUserProfileCommand
+                {
+                    AvatarUrl = avatarUrl
+                };
+                await mediator.Send(updateCommand);
+
+                return Ok(ApiResponse<string>.Ok(avatarUrl, "头像上传成功"));
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "用户 {UserId} 上传头像失败", GetCurrentUserId());
+                return StatusCode(500, ApiResponse<string>.Fail("UPLOAD_FAILED", $"头像上传失败: {ex.Message}"));
+            }
+        }
+
+        /// <summary>
+        /// 获取用户头像
+        /// </summary>
+        /// <param name="userId">用户ID</param>
+        /// <returns>头像文件</returns>
+        [HttpGet("avatar/{userId}")]
+        [AllowAnonymous]  // 允许匿名访问头像
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> GetAvatarAsync(Guid userId)
+        {
+            try
+            {
+                // 直接调用Service，因为这是公开的头像访问
+                var profile = await userService.GetProfileAsync(userId);
+                
+                if (profile == null)
+                {
+                    return NotFound();
+                }
+
+                // 获取用户头像（UserProfile已经处理了默认头像URL）
+                var avatarBytes = await avatarService.GetAvatarAsync(profile.AvatarUrl);
+                if (avatarBytes != null)
+                {
+                    var contentType = GetContentType(Path.GetExtension(profile.AvatarUrl));
+                    return File(avatarBytes, contentType);
+                }
+
+                // 如果获取失败，返回默认头像
+                var defaultAvatarBytes = await avatarService.GetDefaultAvatarAsync();
+                if (defaultAvatarBytes != null)
+                {
+                    return File(defaultAvatarBytes, "image/png");
+                }
+
+                return NotFound();
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "获取用户 {UserId} 头像失败", userId);
+                return NotFound();
+            }
+        }
+
+        private string GetContentType(string fileExtension)
+        {
+            return fileExtension.ToLowerInvariant() switch
+            {
+                ".jpg" or ".jpeg" => "image/jpeg",
+                ".png" => "image/png",
+                ".gif" => "image/gif",
+                _ => "application/octet-stream"
+            };
         }
     }
 }

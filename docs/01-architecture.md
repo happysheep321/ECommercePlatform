@@ -170,7 +170,8 @@ ECommerce.Identity   ECommerce.Product   ECommerce.Cart
 
 | 模块         | 职责范围                                       |
 | ------------ | ---------------------------------------------- |
-| 用户认证模块 | 用户注册、登录、权限管理，OAuth 授权           |
+| 用户认证模块 | 用户注册、登录、权限管理，OAuth 授权，管理员接口 |
+| 管理员接口模块 | 用户管理、角色管理、权限管理、系统管理 |
 | 商品中心模块 | 商品分类、SKU、属性管理、图片存储、搜索能力    |
 | 购物车模块   | 用户跨端购物清单缓存与管理（Redis 支持）       |
 | 订单模块     | 创建、取消、支付、发货、售后等订单生命周期管理 |
@@ -190,6 +191,7 @@ ECommerce.Identity   ECommerce.Product   ECommerce.Cart
 | 消息队列 | RabbitMQ         | 实现异步通信、服务解耦、事件驱动     |
 | 配置中心 | Consul / Apollo  | 动态配置管理、服务注册与发现         |
 | 网关系统 | YARP / Ocelot    | 请求路由、统一认证鉴权、限流控制     |
+| 权限系统 | JWT + Role-Based | 管理员接口权限控制、用户角色管理     |
 
 ------
 
@@ -204,3 +206,4 @@ ECommerce.Identity   ECommerce.Product   ECommerce.Cart
 | 自动化测试 | 单元测试（xUnit）、集成测试（Postman + Newman）           |
 | 持续集成   | GitHub Actions + Docker 镜像构建 + Helm 部署 K8s          |
 | 容灾备份   | 自动化数据库备份，Redis 开启持久化                        |
+| 管理员接口 | 权限控制、操作日志、性能优化、数据一致性保障              |

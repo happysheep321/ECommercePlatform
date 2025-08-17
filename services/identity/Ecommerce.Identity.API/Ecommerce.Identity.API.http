@@ -1,6 +1,321 @@
 @ECommerce.Identity.API_HostAddress = http://localhost:5034
+@authToken = your_jwt_token_here
 
-GET {{ECommerce.Identity.API_HostAddress}}/weatherforecast/
+### ===================== 用户管理接口 =====================
+
+### 获取所有用户列表（管理员）
+GET {{ECommerce.Identity.API_HostAddress}}/api/user/admin/all
+Authorization: Bearer {{authToken}}
 Accept: application/json
+
+###
+
+### 根据ID获取用户详情（管理员）
+GET {{ECommerce.Identity.API_HostAddress}}/api/user/admin/{{userId}}
+Authorization: Bearer {{authToken}}
+Accept: application/json
+
+###
+
+### 激活用户账户（管理员）
+POST {{ECommerce.Identity.API_HostAddress}}/api/user/{{userId}}/activate
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+###
+
+### 封禁用户账户（管理员）
+POST {{ECommerce.Identity.API_HostAddress}}/api/user/{{userId}}/ban
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+"违反社区规定"
+
+###
+
+### 冻结用户账户（管理员）
+POST {{ECommerce.Identity.API_HostAddress}}/api/user/{{userId}}/freeze
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+"账户异常，需要审核"
+
+###
+
+### 删除用户账户（管理员）
+DELETE {{ECommerce.Identity.API_HostAddress}}/api/user/{{userId}}
+Authorization: Bearer {{authToken}}
+
+###
+
+### 为用户分配角色（管理员）
+POST {{ECommerce.Identity.API_HostAddress}}/api/user/role/assign?userId={{userId}}&roleId={{roleId}}
+Authorization: Bearer {{authToken}}
+
+###
+
+### 移除用户角色（管理员）
+DELETE {{ECommerce.Identity.API_HostAddress}}/api/user/role/remove?userId={{userId}}&roleId={{roleId}}
+Authorization: Bearer {{authToken}}
+
+###
+
+### ===================== 角色管理接口 =====================
+
+### 获取所有角色列表（管理员）
+GET {{ECommerce.Identity.API_HostAddress}}/api/role
+Authorization: Bearer {{authToken}}
+Accept: application/json
+
+###
+
+### 根据ID获取角色详情（管理员）
+GET {{ECommerce.Identity.API_HostAddress}}/api/role/{{roleId}}
+Authorization: Bearer {{authToken}}
+Accept: application/json
+
+###
+
+### 创建新角色（管理员）
+POST {{ECommerce.Identity.API_HostAddress}}/api/role
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "name": "Editor",
+  "displayName": "编辑员",
+  "description": "内容编辑权限"
+}
+
+###
+
+### 更新角色信息（管理员）
+PUT {{ECommerce.Identity.API_HostAddress}}/api/role
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "roleId": "{{roleId}}",
+  "name": "SeniorEditor",
+  "displayName": "高级编辑员",
+  "description": "高级内容编辑权限"
+}
+
+###
+
+### 删除角色（管理员）
+DELETE {{ECommerce.Identity.API_HostAddress}}/api/role
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "roleId": "{{roleId}}"
+}
+
+###
+
+### 启用角色（管理员）
+POST {{ECommerce.Identity.API_HostAddress}}/api/role/enable
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "roleId": "{{roleId}}"
+}
+
+###
+
+### 禁用角色（管理员）
+POST {{ECommerce.Identity.API_HostAddress}}/api/role/disable
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "roleId": "{{roleId}}"
+}
+
+###
+
+### 获取角色的权限列表（管理员）
+GET {{ECommerce.Identity.API_HostAddress}}/api/role/{{roleId}}/permissions
+Authorization: Bearer {{authToken}}
+Accept: application/json
+
+###
+
+### 为角色分配权限（管理员）
+POST {{ECommerce.Identity.API_HostAddress}}/api/role/{{roleId}}/permissions
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+["permission-id-1", "permission-id-2", "permission-id-3"]
+
+###
+
+### ===================== 权限管理接口 =====================
+
+### 获取所有权限列表（管理员）
+GET {{ECommerce.Identity.API_HostAddress}}/api/permission
+Authorization: Bearer {{authToken}}
+Accept: application/json
+
+###
+
+### 根据ID获取权限详情（管理员）
+GET {{ECommerce.Identity.API_HostAddress}}/api/permission/{{permissionId}}
+Authorization: Bearer {{authToken}}
+Accept: application/json
+
+###
+
+### 检查用户是否有指定权限（管理员）
+GET {{ECommerce.Identity.API_HostAddress}}/api/permission/check/{{userId}}/{{permissionCode}}
+Authorization: Bearer {{authToken}}
+Accept: application/json
+
+###
+
+### ===================== 用户个人功能接口 =====================
+
+### 获取当前用户资料
+GET {{ECommerce.Identity.API_HostAddress}}/api/user/profile
+Authorization: Bearer {{authToken}}
+Accept: application/json
+
+###
+
+### 更新用户资料
+PUT {{ECommerce.Identity.API_HostAddress}}/api/user/profile
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "firstName": "张",
+  "lastName": "三",
+  "gender": 1,
+  "birthDate": "1990-01-01",
+  "phone": "13800138000"
+}
+
+###
+
+### 修改用户密码
+PUT {{ECommerce.Identity.API_HostAddress}}/api/user/change-password
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "oldPassword": "oldPassword123",
+  "newPassword": "newPassword123"
+}
+
+###
+
+### 添加用户地址
+POST {{ECommerce.Identity.API_HostAddress}}/api/user/address
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "recipientName": "张三",
+  "phone": "13800138000",
+  "province": "广东省",
+  "city": "深圳市",
+  "district": "南山区",
+  "detailAddress": "科技园路1号",
+  "isDefault": true
+}
+
+###
+
+### 更新用户地址
+PUT {{ECommerce.Identity.API_HostAddress}}/api/user/address
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "addressId": "{{addressId}}",
+  "recipientName": "张三",
+  "phone": "13800138000",
+  "province": "广东省",
+  "city": "深圳市",
+  "district": "南山区",
+  "detailAddress": "科技园路1号",
+  "isDefault": true
+}
+
+###
+
+### 删除用户地址
+DELETE {{ECommerce.Identity.API_HostAddress}}/api/user/address/{{addressId}}
+Authorization: Bearer {{authToken}}
+
+###
+
+### 上传用户头像
+POST {{ECommerce.Identity.API_HostAddress}}/api/user/avatar
+Authorization: Bearer {{authToken}}
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="file"; filename="avatar.jpg"
+Content-Type: image/jpeg
+
+< ./avatar.jpg
+------WebKitFormBoundary7MA4YWxkTrZu0gW--
+
+###
+
+### 获取用户头像（公开访问）
+GET {{ECommerce.Identity.API_HostAddress}}/api/user/avatar/{{userId}}
+Accept: image/*
+
+###
+
+### ===================== 认证接口 =====================
+
+### 用户注册
+POST {{ECommerce.Identity.API_HostAddress}}/api/auth/register
+Content-Type: application/json
+
+{
+  "userName": "testuser",
+  "email": "test@example.com",
+  "password": "Password123!",
+  "phone": "13800138000",
+  "emailVerifyCode": "123456",
+  "userType": 0
+}
+
+###
+
+### 用户登录
+POST {{ECommerce.Identity.API_HostAddress}}/api/auth/login
+Content-Type: application/json
+
+{
+  "userName": "testuser",
+  "password": "Password123!"
+}
+
+###
+
+### 忘记密码
+POST {{ECommerce.Identity.API_HostAddress}}/api/auth/forgot-password
+Content-Type: application/json
+
+{
+  "email": "test@example.com"
+}
+
+###
+
+### 发送邮箱验证码
+POST {{ECommerce.Identity.API_HostAddress}}/api/auth/email-code
+Content-Type: application/json
+
+{
+  "email": "test@example.com"
+}
 
 ###
