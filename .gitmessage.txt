@@ -1,0 +1,36 @@
+# -------------------- Commit Message Template --------------------
+# <type>(<scope>): <subject>
+# 空一行
+# <body>
+# 空一行
+# <footer>
+#
+# 常用 type：
+#   feat     新功能
+#   fix      修复 bug
+#   docs     文档修改
+#   style    代码格式化/风格调整（不影响逻辑）
+#   refactor 代码重构（既不是新功能也不是修复 bug）
+#   perf     性能优化
+#   test     新增或修改测试
+#   chore    构建/工具/依赖/配置相关
+#   revert   回滚提交
+#
+# scope（可选）：影响范围，如 user, order, admin, db, doc
+#
+# subject：一句话描述改动，50 字以内（中文或英文都可）
+#
+# body（可选）：详细说明修改原因、动机、方案
+#   - 可分点描述
+#   - 解释为什么要这样改
+#
+# footer（可选）：
+#   - BREAKING CHANGE: 描述破坏性改动
+#   - 关联 issue，如 Closes #123
+# -----------------------------------------------------------------
+
+<type>(<scope>): <subject>
+
+<body>
+
+<footer>
