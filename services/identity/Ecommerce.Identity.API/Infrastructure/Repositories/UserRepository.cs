@@ -44,6 +44,7 @@ namespace ECommerce.Identity.API.Infrastructure.Repositories
             return await this.context.Users
                 .Include(u => u.Addresses)
                 .Include(u => u.UserRoles)
+                    .ThenInclude(ur => ur.Role)  // 预加载角色信息，避免N+1查询
                 .Include(u => u.Profile)
                 .AsNoTracking()
                 .ToListAsync();

@@ -187,7 +187,7 @@ public class UserController : ControllerBase
 }
 ```
 
-**2. CQRS模式**
+**2. 基于Mediator的CQRS模式（入门版本）**
 ```csharp
 // Command - 命令
 public class GetAllUsersCommand : IRequest<List<UserProfileDto>>
@@ -213,44 +213,42 @@ public class GetAllUsersCommandHandler : IRequestHandler<GetAllUsersCommand, Lis
 
 **3. 性能优化**
 ```csharp
-// 避免N+1查询问题
-public async Task<List<UserProfileDto>> GetAllUsersAsync()
+// Repository层：使用Include预加载避免N+1查询
+public async Task<List<User>> GetAllAsync()
+{
+    return await context.Users
+        .Include(u => u.Addresses)
+        .Include(u => u.UserRoles)
+            .ThenInclude(ur => ur.Role)  // 预加载角色信息
+        .Include(u => u.Profile)
+        .AsNoTracking()
+        .ToListAsync();
+}
+
+// Service层：使用预加载的数据，避免额外查询
+public async Task<List<UserListDto>> GetAllUsersAsync()
 {
     var users = await userRepository.GetAllAsync();
-    var userProfiles = new List<UserProfileDto>();
-
-    foreach (var user in users)
+    
+    // 使用预加载的角色信息，避免N+1查询
+    return users.Select(user => new UserListDto
     {
-        // 直接构建UserProfileDto，避免N+1查询
-        var roleIds = user.UserRoles.Select(ur => ur.RoleId).ToList();
-        var roles = await roleRepository.GetByIdsAsync(roleIds);
-        var roleMap = roles.ToDictionary(r => r.Id, r => r);
-
-        var profile = new UserProfileDto
-        {
-            UserId = user.Id,
-            UserName = user.UserName!,
-            Email = user.Email,
-            Phone = user.PhoneNumber!,
-            // ... 其他属性
-            Roles = user.UserRoles.Select(ur => 
-            {
-                var role = roleMap[ur.RoleId];
-                return new RoleDto
-                {
-                    RoleId = role.Id,
-                    Name = role.Name ?? string.Empty,
-                    Description = role.Description ?? string.Empty,
-                    IsEnabled = role.Enabled,
-                    IsSystem = role.IsSystemRole
-                };
-            }).ToList()
-        };
-
-        userProfiles.Add(profile);
-    }
-
-    return userProfiles;
+        UserId = user.Id,
+        UserName = user.UserName!,
+        Email = user.Email,
+        Phone = user.PhoneNumber,
+        NickName = user.Profile.NickName,
+        Status = user.Status,
+        UserType = user.Type,
+        CreatedAt = user.RegisterTime,
+        RoleNames = user.UserRoles
+            .Select(ur => ur.Role?.Name ?? string.Empty)
+            .Where(name => !string.IsNullOrEmpty(name))
+            .ToList(),
+        IsActive = user.Status == UserStatus.Active,
+        IsFrozen = user.Status == UserStatus.Frozen,
+        IsBanned = user.Status == UserStatus.Banned
+    }).ToList();
 }
 ```
 
@@ -911,6 +909,7 @@ fetch('/api/user/avatar', {
 - **错误处理**：返回用户友好的错误信息，不暴露系统细节
 
 ### 2. 性能优化
+- **避免N+1查询**：使用Include和ThenInclude预加载关联数据
 - **分页查询**：对于大量数据的查询，使用分页避免性能问题
 - **缓存策略**：对权限列表等不常变化的数据进行缓存
 - **批量操作**：支持批量用户操作，提高效率
@@ -955,8 +954,8 @@ fetch('/api/user/avatar', {
 **学习提示：**
 - 管理员接口是身份认证服务的重要组成部分，支持完整的用户管理功能
 - 权限控制是管理员接口的核心，使用`[Authorize(Roles = "Admin")]`确保安全
-- CQRS模式在管理员接口中得到广泛应用，提高代码的可维护性
-- 性能优化很重要，避免N+1查询问题，使用适当的缓存策略
+- 基于Mediator的CQRS模式在管理员接口中得到广泛应用，提高代码的可维护性
+- 性能优化很重要，使用Include预加载避免N+1查询问题，使用适当的缓存策略
 - 邮件发送是身份认证服务的重要组成部分
 - 头像处理增加了用户个性化体验
 - 理解SMTP协议和文件处理很重要

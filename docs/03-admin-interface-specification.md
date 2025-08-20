@@ -2,7 +2,7 @@
 
 ## 功能概述
 
-管理员接口是ECommerce平台的核心管理功能模块，为系统管理员提供完整的用户、角色、权限管理能力。本模块遵循DDD架构设计，采用CQRS模式实现，确保系统的安全性、性能和可维护性。
+管理员接口是ECommerce平台的核心管理功能模块，为系统管理员提供完整的用户、角色、权限管理能力。本模块遵循DDD架构设计，采用基于Mediator的CQRS模式实现（入门版本），确保系统的安全性、性能和可维护性。
 
 ## 功能模块设计
 
@@ -69,14 +69,14 @@
 [Authorize(Roles = "Admin")]
 ```
 
-### 2. CQRS架构模式
+### 2. 基于Mediator的CQRS架构模式（入门版本）
 使用MediatR实现命令查询分离：
 - Command：定义操作命令
 - Handler：处理命令逻辑
 - 通过mediator.Send()发送命令
 
 ### 3. 性能优化策略
-- **避免N+1查询**：使用Include预加载相关数据
+- **避免N+1查询**：使用Include预加载相关数据，通过ThenInclude预加载关联实体
 - **批量查询**：一次性获取所有需要的角色信息
 - **AsNoTracking**：对于只读查询使用AsNoTracking提高性能
 
@@ -144,7 +144,7 @@ services.AddScoped<IPermissionService, PermissionService>();
 ## 开发最佳实践
 
 ### 1. 代码组织规范
-- 遵循CQRS模式
+- 遵循基于Mediator的CQRS模式（入门版本）
 - 使用依赖注入
 - 遵循单一职责原则
 
@@ -160,7 +160,7 @@ services.AddScoped<IPermissionService, PermissionService>();
 
 ## 总结
 
-管理员接口功能模块是ECommerce平台的核心管理组件，通过DDD架构设计和CQRS模式实现，为系统管理员提供了：
+管理员接口功能模块是ECommerce平台的核心管理组件，通过DDD架构设计和基于Mediator的CQRS模式实现（入门版本），为系统管理员提供了：
 
 ### 🎯 核心能力
 - **完整的用户管理**：支持用户的查看、状态管理、角色分配等

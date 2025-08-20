@@ -54,7 +54,150 @@ ECommerce.BuildingBlocks/
 
 ## 【核心功能详解】
 
-### 1. JWT认证配置
+### 1. 通用服务注册模板
+
+#### 什么是服务注册模板？
+服务注册模板就像是一个**标准化的配置模板**，将常用的服务注册逻辑封装成可复用的方法。这样每个微服务都可以使用相同的配置方式，确保一致性和可维护性。
+
+#### 核心模板方法
+
+**1. 微服务通用配置模板**
+```csharp
+// 一行代码配置所有微服务基础功能
+public static IServiceCollection AddMicroserviceCommonServices(
+    this IServiceCollection services,
+    IConfiguration configuration,
+    string serviceName,
+    string swaggerTitle,
+    bool enableJwtAuth = false,
+    bool enableRedis = false,
+    Assembly? mediatRAssembly = null,
+    Assembly? validatorAssembly = null)
+{
+    // 1. 基础Web服务
+    services.AddBaseWebServices();
+    
+    // 2. Serilog日志配置
+    services.AddSerilogServices(configuration, serviceName);
+    
+    // 3. Swagger文档配置
+    var xmlDocumentPath = Path.Combine(AppContext.BaseDirectory, $"{serviceName}.xml");
+    services.AddSwaggerDocumentation(swaggerTitle, xmlDocumentPath: xmlDocumentPath);
+    
+    // 4. JWT认证（可选）
+    if (enableJwtAuth)
+    {
+        services.AddJwtAuthentication(configuration);
+    }
+    
+    // 5. Redis缓存（可选）
+    if (enableRedis)
+    {
+        services.AddRedisServices(configuration);
+    }
+    
+    // 6. MediatR注册（可选）
+    if (mediatRAssembly != null)
+    {
+        services.AddMediatRServices(mediatRAssembly);
+    }
+    
+    // 7. FluentValidation注册（可选）
+    if (validatorAssembly != null)
+    {
+        services.AddValidatorsFromAssembly(validatorAssembly);
+    }
+    
+    return services;
+}
+```
+
+**2. 网关服务配置模板**
+```csharp
+// 网关专用配置模板
+public static IServiceCollection AddGatewayCommonServices(
+    this IServiceCollection services,
+    IConfiguration configuration)
+{
+    services.AddJwtAuthentication(configuration);
+    services.AddCorsPolicy();
+    services.AddSerilogServices(configuration, "Gateway");
+    services.AddReverseProxy()
+           .LoadFromConfig(configuration.GetSection("ReverseProxy"));
+    
+    return services;
+}
+```
+
+**3. 基础Web服务模板**
+```csharp
+// 所有Web服务的基础配置
+public static IServiceCollection AddBaseWebServices(
+    this IServiceCollection services)
+{
+    services.AddControllers();
+    services.AddEndpointsApiExplorer();
+    services.AddHttpContextAccessor();
+    
+    return services;
+}
+```
+
+#### 使用示例
+
+**在微服务中使用：**
+```csharp
+// Program.cs - 一行配置所有基础功能
+var builder = WebApplication.CreateBuilder(args);
+
+// 使用通用模板配置微服务
+builder.Services.AddMicroserviceCommonServices(
+    configuration: builder.Configuration,
+    serviceName: "ECommerce.Identity.API",
+    swaggerTitle: "ECommerce.Identity.API",
+    enableJwtAuth: true,           // 启用JWT认证
+    enableRedis: true,             // 启用Redis缓存
+    mediatRAssembly: Assembly.GetExecutingAssembly(),    // 自动发现Handler
+    validatorAssembly: Assembly.GetExecutingAssembly()   // 自动发现验证器
+);
+
+var app = builder.Build();
+```
+
+**在网关中使用：**
+```csharp
+// Program.cs - 网关配置
+var builder = WebApplication.CreateBuilder(args);
+
+// 使用网关专用模板
+builder.Services.AddGatewayCommonServices(builder.Configuration);
+
+var app = builder.Build();
+```
+
+#### 模板的优势
+
+**1. 标准化配置**
+- 所有微服务使用相同的配置方式
+- 减少配置错误和不一致
+- 便于维护和升级
+
+**2. 快速开发**
+- 一行代码配置所有基础功能
+- 新服务可以快速搭建
+- 减少重复代码
+
+**3. 灵活配置**
+- 通过参数控制功能开关
+- 支持不同服务的个性化需求
+- 易于扩展和定制
+
+**4. 程序集自动发现**
+- 自动发现Handler和验证器
+- 无需手动注册每个组件
+- 符合开闭原则
+
+### 2. JWT认证配置
 
 #### 什么是JWT？
 JWT（JSON Web Token）就像是一个**电子身份证**：
@@ -271,6 +414,8 @@ public static IServiceCollection AddSerilogServices(
 ## 【实际使用示例】
 
 ### 完整的Program.cs配置
+
+#### 传统方式（不推荐）
 ```csharp
 using ECommerce.BuildingBlocks.Extensions;
 
@@ -306,6 +451,41 @@ app.UseSwaggerUI();
 app.MapControllers();
 app.Run();
 ```
+
+#### 模板方式（推荐）
+```csharp
+using ECommerce.BuildingBlocks.Extensions;
+
+var builder = WebApplication.CreateBuilder(args);
+
+// 一行代码配置所有基础功能
+builder.Services.AddMicroserviceCommonServices(
+    configuration: builder.Configuration,
+    serviceName: "ECommerce.Identity.API",
+    swaggerTitle: "ECommerce.Identity.API",
+    enableJwtAuth: true,
+    enableRedis: true,
+    mediatRAssembly: Assembly.GetExecutingAssembly(),
+    validatorAssembly: Assembly.GetExecutingAssembly()
+);
+
+var app = builder.Build();
+
+// 使用通用中间件配置
+app.UseMicroserviceCommonMiddleware(builder.Environment);
+
+app.Run();
+```
+
+### 模板模式的优势对比
+
+| 方面 | 传统方式 | 模板方式 |
+|------|----------|----------|
+| **代码行数** | 20+ 行 | 1 行 |
+| **配置一致性** | 容易出错 | 标准化 |
+| **维护成本** | 高 | 低 |
+| **新服务搭建** | 慢 | 快 |
+| **功能扩展** | 需要修改多处 | 只需修改模板 |
 
 ## 【依赖注入详解】
 
@@ -351,13 +531,212 @@ public class UserController : ControllerBase
 }
 ```
 
+## 【模板模式最佳实践】
+
+### 1. 模板设计原则
+
+#### 单一职责原则
+每个模板方法只负责一个特定的配置领域：
+```csharp
+// ✅ 好的设计：职责单一
+services.AddBaseWebServices();           // 只负责基础Web服务
+services.AddJwtAuthentication(config);   // 只负责JWT认证
+services.AddRedisServices(config);       // 只负责Redis缓存
+
+// ❌ 不好的设计：职责混乱
+services.AddEverything(config);          // 什么都做，难以维护
+```
+
+#### 开闭原则
+模板应该对扩展开放，对修改封闭：
+```csharp
+// ✅ 好的设计：支持扩展
+public static IServiceCollection AddMicroserviceCommonServices(
+    this IServiceCollection services,
+    IConfiguration configuration,
+    string serviceName,
+    string swaggerTitle,
+    bool enableJwtAuth = false,          // 可选功能
+    bool enableRedis = false,            // 可选功能
+    Assembly? mediatRAssembly = null,    // 可选功能
+    Assembly? validatorAssembly = null)  // 可选功能
+{
+    // 基础配置
+    services.AddBaseWebServices();
+    services.AddSerilogServices(configuration, serviceName);
+    
+    // 条件配置
+    if (enableJwtAuth) services.AddJwtAuthentication(configuration);
+    if (enableRedis) services.AddRedisServices(configuration);
+    if (mediatRAssembly != null) services.AddMediatRServices(mediatRAssembly);
+    if (validatorAssembly != null) services.AddValidatorsFromAssembly(validatorAssembly);
+    
+    return services;
+}
+```
+
+### 2. 模板使用技巧
+
+#### 参数化配置
+使用配置文件控制模板行为：
+```csharp
+// appsettings.json
+{
+  "ServiceConfiguration": {
+    "EnableJwtAuth": true,
+    "EnableRedis": true,
+    "EnableSwagger": true
+  }
+}
+
+// Program.cs
+var serviceConfig = configuration.GetSection("ServiceConfiguration").Get<ServiceConfiguration>();
+
+services.AddMicroserviceCommonServices(
+    configuration: configuration,
+    serviceName: "MyService",
+    swaggerTitle: "MyService API",
+    enableJwtAuth: serviceConfig.EnableJwtAuth,
+    enableRedis: serviceConfig.EnableRedis
+);
+```
+
+#### 环境特定配置
+根据环境使用不同的模板：
+```csharp
+var environment = builder.Environment.EnvironmentName;
+
+if (environment == "Development")
+{
+    services.AddMicroserviceCommonServices(
+        configuration: configuration,
+        serviceName: serviceName,
+        swaggerTitle: swaggerTitle,
+        enableJwtAuth: true,
+        enableRedis: false  // 开发环境可能不需要Redis
+    );
+}
+else if (environment == "Production")
+{
+    services.AddMicroserviceCommonServices(
+        configuration: configuration,
+        serviceName: serviceName,
+        swaggerTitle: swaggerTitle,
+        enableJwtAuth: true,
+        enableRedis: true   // 生产环境需要Redis
+    );
+}
+```
+
+### 3. 模板扩展方法
+
+#### 创建业务特定模板
+```csharp
+// 为电商平台创建专用模板
+public static IServiceCollection AddECommerceServices(
+    this IServiceCollection services,
+    IConfiguration configuration,
+    string serviceName)
+{
+    // 基础微服务配置
+    services.AddMicroserviceCommonServices(
+        configuration: configuration,
+        serviceName: serviceName,
+        swaggerTitle: serviceName,
+        enableJwtAuth: true,
+        enableRedis: true
+    );
+    
+    // 电商平台特有配置
+    services.AddScoped<IUnitOfWork, UnitOfWork>();
+    services.AddScoped<IDomainEventDispatcher, MediatRDomainEventDispatcher>();
+    services.AddScoped<IPermissionService, PermissionService>();
+    
+    return services;
+}
+```
+
+#### 创建中间件模板
+```csharp
+// 中间件配置模板
+public static IApplicationBuilder UseMicroserviceCommonMiddleware(
+    this IApplicationBuilder app,
+    IWebHostEnvironment environment)
+{
+    // 基础中间件
+    app.UseRouting();
+    app.UseCors("AllowAll");
+    
+    // 认证授权
+    app.UseAuthentication();
+    app.UseAuthorization();
+    
+    // 开发环境特有
+    if (environment.IsDevelopment())
+    {
+        app.UseSwagger();
+        app.UseSwaggerUI();
+    }
+    
+    // 端点配置
+    app.UseEndpoints(endpoints =>
+    {
+        endpoints.MapControllers();
+    });
+    
+    return app;
+}
+```
+
+### 4. 模板测试策略
+
+#### 单元测试模板方法
+```csharp
+[Test]
+public void AddMicroserviceCommonServices_WithValidParameters_ShouldRegisterAllServices()
+{
+    // Arrange
+    var services = new ServiceCollection();
+    var configuration = new ConfigurationBuilder()
+        .AddInMemoryCollection(new Dictionary<string, string>
+        {
+            {"JwtSettings:SecretKey", "test-secret-key"},
+            {"ConnectionStrings:Redis", "localhost:6379"}
+        })
+        .Build();
+    
+    // Act
+    services.AddMicroserviceCommonServices(
+        configuration: configuration,
+        serviceName: "TestService",
+        swaggerTitle: "Test API",
+        enableJwtAuth: true,
+        enableRedis: true
+    );
+    
+    // Assert
+    var serviceProvider = services.BuildServiceProvider();
+    
+    // 验证基础服务是否注册
+    Assert.IsNotNull(serviceProvider.GetService<IControllerFactory>());
+    Assert.IsNotNull(serviceProvider.GetService<IHttpContextAccessor>());
+    
+    // 验证JWT服务是否注册
+    Assert.IsNotNull(serviceProvider.GetService<IAuthenticationService>());
+    
+    // 验证Redis服务是否注册
+    Assert.IsNotNull(serviceProvider.GetService<IRedisHelper>());
+}
+```
+
 ## 【下一步】
 接下来我们将学习 **SharedKernel（共享领域模型）**，这是所有微服务共享的基础数据模型。请查看 `03_SharedKernel.md` 文档。
 
 ---
 
 **学习提示：**
-- 这些扩展方法就像积木，可以组合使用
-- 每个方法都有特定的作用，理解其原理很重要
-- 配置文件是这些功能的基础，要确保配置正确
+- 服务注册模板是BuildingBlocks的核心功能，掌握它能让开发效率大幅提升
+- 模板设计要遵循SOLID原则，确保可维护性和可扩展性
+- 合理使用参数化配置，让模板更加灵活
+- 为特定业务场景创建专用模板，提高代码复用性
 - 依赖注入是.NET Core的核心概念，要深入理解

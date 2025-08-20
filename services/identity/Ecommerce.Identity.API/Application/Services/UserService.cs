@@ -357,36 +357,27 @@ namespace ECommerce.Identity.API.Application.Services
         public async Task<List<UserListDto>> GetAllUsersAsync()
         {
             var users = await userRepository.GetAllAsync();
-            var userList = new List<UserListDto>();
-
-            foreach (var user in users)
+            
+            // 使用预加载的角色信息，避免N+1查询
+            return users.Select(user => new UserListDto
             {
-                // 获取用户角色名称（简化信息）
-                var roleIds = user.UserRoles.Select(ur => ur.RoleId).ToList();
-                var roles = await roleRepository.GetByIdsAsync(roleIds);
-                var roleNames = roles.Select(r => r.Name ?? string.Empty).Where(name => !string.IsNullOrEmpty(name)).ToList();
-
-                var userListItem = new UserListDto
-                {
-                    UserId = user.Id,
-                    UserName = user.UserName!,
-                    Email = user.Email,
-                    Phone = user.PhoneNumber,
-                    NickName = user.Profile.NickName,
-                    Status = user.Status,
-                    UserType = user.Type,
-                    CreatedAt = user.RegisterTime,
-                    LastLoginAt = null, // TODO: 后续可以添加最后登录时间字段
-                    RoleNames = roleNames,
-                    IsActive = user.Status == UserStatus.Active,
-                    IsFrozen = user.Status == UserStatus.Frozen,
-                    IsBanned = user.Status == UserStatus.Banned
-                };
-
-                userList.Add(userListItem);
-            }
-
-            return userList;
+                UserId = user.Id,
+                UserName = user.UserName!,
+                Email = user.Email,
+                Phone = user.PhoneNumber,
+                NickName = user.Profile.NickName,
+                Status = user.Status,
+                UserType = user.Type,
+                CreatedAt = user.RegisterTime,
+                LastLoginAt = null, // TODO: 后续可以添加最后登录时间字段
+                RoleNames = user.UserRoles
+                    .Select(ur => ur.Role?.Name ?? string.Empty)
+                    .Where(name => !string.IsNullOrEmpty(name))
+                    .ToList(),
+                IsActive = user.Status == UserStatus.Active,
+                IsFrozen = user.Status == UserStatus.Frozen,
+                IsBanned = user.Status == UserStatus.Banned
+            }).ToList();
         }
 
         public async Task<UserProfileDto?> GetUserByIdAsync(Guid userId)
