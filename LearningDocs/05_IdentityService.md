@@ -871,34 +871,7 @@ fetch('/api/permission/check/' + userId + '/' + permissionCode, {
 });
 ```
 
-### 头像上传使用示例
-```csharp
-// 前端HTML表单
-<form method="post" enctype="multipart/form-data" action="/api/user/avatar">
-    <input type="file" name="file" accept="image/*" />
-    <button type="submit">上传头像</button>
-</form>
 
-// JavaScript上传
-const formData = new FormData();
-formData.append('file', fileInput.files[0]);
-
-fetch('/api/user/avatar', {
-    method: 'POST',
-    headers: {
-        'Authorization': 'Bearer ' + token
-    },
-    body: formData
-})
-.then(response => response.json())
-.then(data => {
-    if (data.success) {
-        console.log('头像上传成功:', data.data);
-    } else {
-        console.error('上传失败:', data.message);
-    }
-});
-```
 
 ## 【最佳实践】
 
@@ -931,17 +904,17 @@ fetch('/api/user/avatar', {
 - **文件名安全**：使用时间戳和用户ID生成唯一文件名
 - **路径安全**：避免路径遍历攻击
 
-### 2. 性能优化
+### 6. 头像处理优化
 - **异步处理**：使用异步方法处理文件操作
 - **流式处理**：使用流而不是一次性加载整个文件
 - **缓存策略**：对头像文件进行适当的缓存
 
-### 3. 错误处理
+### 7. 错误处理
 - **详细日志**：记录所有文件操作的日志
 - **异常处理**：捕获并处理所有可能的异常
 - **用户友好**：返回用户友好的错误信息
 
-### 4. 存储策略
+### 8. 存储策略
 - **本地存储**：适合小型应用
 - **云存储**：适合大型应用（如Azure Blob Storage、AWS S3）
 - **CDN**：使用CDN加速头像访问

@@ -1,0 +1,18 @@
+{
+    "git.commitTemplate": ".gitmessage.txt",
+    "git.enableSmartCommit": true,
+    "git.confirmSync": false,
+    "git.autofetch": true,
+    "git.autofetchPeriod": 180,
+    "git.showPushSuccessNotification": true,
+    "git.enableCommitSigning": false,
+    "git.autoStash": true,
+    "git.allowNoVerifyCommit": false,
+    "git.ignoreLimitWarning": false,
+    "git.ignoreSubmodules": false,
+    "git.showActionButton": {
+        "commit": true,
+        "publish": true,
+        "sync": true
+    }
+}
